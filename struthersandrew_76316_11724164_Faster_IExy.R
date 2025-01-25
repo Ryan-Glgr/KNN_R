@@ -1,6 +1,11 @@
+
+options(repos = c(CRAN = "https://cran.rstudio.com/"))
+install.packages("Rcpp", repos = "https://cran.rstudio.com/")
+
 # Load required libraries
 library("Rcpp")
 library("data.table")
+start_time <- proc.time()
 
 # Source C++ code
 sourceCpp("Faster_kNN_Implementation.cpp")
@@ -29,3 +34,10 @@ system.time({
 
 # Plot the results
 plot(k_values, result, xlab = "k", ylab = "IE(MATHEFF|MATINTFC)")
+
+# End the timer and print total user and system time
+end_time <- proc.time()
+cat("Total Execution Time (seconds):\n")
+cat("User time:", end_time["user.self"] - start_time["user.self"], "\n")
+cat("System time:", end_time["sys.self"] - start_time["sys.self"], "\n")
+cat("Elapsed time:", end_time["elapsed"] - start_time["elapsed"], "\n")
