@@ -25,6 +25,10 @@ void print_vector(Rcpp::NumericVector x);
   returns a vector of the kNN weights for each element of data.
   Uses std::nth_element for more efficient finding of the k-th smallest distance.
 */
+
+
+// used on a particular point (x,y)'s distance array. sorts the array, and then puts into result array, k / (2N * kth distance value) 
+// why 2N???? 
 Rcpp::NumericVector kNN(Rcpp::NumericVector data, int k)
 {
     int N = data.size();
@@ -37,34 +41,29 @@ Rcpp::NumericVector kNN(Rcpp::NumericVector data, int k)
     // Blank density vector
     Rcpp::NumericVector result(N);
 
-    // Parallelize the loop over data points
-    #pragma omp parallel
+    // Thread-local storage for distances
+    std::vector<float> dist(N);
+
+    for (int i = 0; i < N; i++)
     {
-        // Thread-local storage for distances
-        std::vector<float> dist(N);
-
-        #pragma omp for schedule(static)
-        for (int i = 0; i < N; i++)
-        {
-            // Compute the absolute distances between data[i] and all other elements
-            for (int j = 0; j < N; j++) {
-                dist[j] = std::abs(data[i] - data[j]);
-            }
-
-            // Find the k-th smallest distance using nth_element (more efficient than sorting)
-            std::nth_element(dist.begin(), dist.begin() + k, dist.end());
-            float Ri = dist[k]; // k-th nearest distance
-
-            // Append the kNN-approximated density for the i-th point to the result
-            result[i] = k / (N * 2 * Ri);
+        // Compute the absolute distances between data[i] and all other elements
+        for (int j = 0; j < N; j++) {
+            dist[j] = std::abs(data[i] - data[j]);
         }
+
+        // Find the k-th smallest distance using nth_element (more efficient than sorting)
+        std::nth_element(dist.begin(), dist.begin() + k, dist.end());
+        float Ri = dist[k]; // k-th nearest distance
+
+        // Append the kNN-approximated density for the i-th point to the result
+        result[i] = k / (N * 2 * Ri);
     }
 
-#if DEBUG
-    Rprintf("kNN result:       ");
-    print_vector(result);
-#endif
-    return result;
+    #if DEBUG
+        Rprintf("kNN result:       ");
+        print_vector(result);
+    #endif
+        return result;
 }
 
 /*
@@ -81,13 +80,16 @@ float IE_xy(Rcpp::NumericVector data_x, Rcpp::NumericVector data_y, int k)
     // Store the result in a float, avoiding creating two separate arrays for IE and weight
     float result = 0;
 
-    #pragma omp parallel for reduction(+:result) schedule(dynamic)
     for (int i = 0; i < yval.size(); i++)
     {
         // Use vector logic to find the subset of x data that corresponds to this unique y-value
         Rcpp::NumericVector x = data_x[data_y == yval[i]];
 
         // Calculate the conditional information energy using the kNN approximation
+
+        // calls our function and gets back a vector and a float for the average of the result. on a particular vector.
+
+        // result is the average distance between the points 
         Rcpp::NumericVector kNN_result = kNN(x, k);
         float IE = Rcpp::mean(kNN_result);
 
