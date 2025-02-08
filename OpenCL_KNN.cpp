@@ -2,20 +2,10 @@
 #include <cstring>
 #include <algorithm>
 #include <OpenCL/cl.h>
-#include <Rcpp.h>  // Make sure Rcpp is properly configured
+#include <Rcpp.h>
 
 // Kernel source (placeholder)
-const char* kernelSource = R"CLC(
-// Example kernel prototype
-__kernel void computeDistance(__global float* x_allValues,
-                              __global float* distances,
-                              __global float* results,
-                              __global int* numXsPerY,
-                              const int total_x_size,
-                              const int numGroups) {
-    // Kernel code goes here...
-}
-)CLC";
+const char* kernelSource = "CLC()CLC";
 
 float launchKernel(Rcpp::NumericVector data_x, Rcpp::NumericVector data_y) {
     cl_int err;
@@ -87,9 +77,8 @@ float launchKernel(Rcpp::NumericVector data_x, Rcpp::NumericVector data_y) {
     err = clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &globalWorkSize, NULL, 0, NULL, NULL);
     clFinish(queue);
     
-    // get our results back. 
-    err = clEnqueueReadBuffer(queue, resultsBuffer, CL_TRUE, 0,
-                              sizeof(float) * total_x_size, results, 0, NULL, NULL);
+    // get our results back. we actually only need one single float back, since we aggregate the entire results array into one float.
+    err = clEnqueueReadBuffer(queue, resultsBuffer, CL_TRUE, 0, sizeof(float) * total_x_size, results, 0, NULL, NULL);
     
     // Cleanup OpenCL objects
     clReleaseMemObject(xBuffer);

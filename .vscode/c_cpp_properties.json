@@ -3,15 +3,19 @@
         {
             "name": "Mac",
             "includePath": [
-                "${workspaceFolder}/**"
+                "${workspaceFolder}/**",
+                "/Library/Frameworks/R.framework/Headers",
+                "/Library/Frameworks/R.framework/Versions/Current/Resources/library/Rcpp/include",
+                "/System/Library/Frameworks/OpenCL.framework/Headers"
             ],
             "defines": [],
             "macFrameworkPath": [
-                "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks"
+                "/System/Library/Frameworks",
+                "/Library/Frameworks"
             ],
             "cStandard": "c17",
             "cppStandard": "c++17",
-            "intelliSenseMode": "macos-clang-x64"
+            "intelliSenseMode": "clang-x64"
         }
     ],
     "version": 4
