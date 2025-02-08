@@ -1,99 +1,136 @@
 #include <iostream>
+#include <fstream>
+#include <sstream>
 #include <cstring>
 #include <algorithm>
 #include <OpenCL/cl.h>
 #include <Rcpp.h>
 
-// Kernel source (placeholder)
-const char* kernelSource = "CLC()CLC";
-
-float launchKernel(Rcpp::NumericVector data_x, Rcpp::NumericVector data_y) {
+// [[Rcpp::export]]
+float launchKernel(Rcpp::NumericVector data_x, Rcpp::NumericVector data_y, int K) {
     cl_int err;
 
-    // opencl setup garbage
+    // ---------------------- PLATFORM/DEVICE SETUP ----------------------
     cl_platform_id platform;
     err = clGetPlatformIDs(1, &platform, NULL);
-    
+
     cl_device_id device;
     err = clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, 1, &device, NULL);
     
+    // Create a context for the device.
     cl_context context = clCreateContext(NULL, 1, &device, NULL, NULL, &err);
+    // Create a command queue. (Note: clCreateCommandQueue is deprecated in OpenCL 2.0.)
     cl_command_queue queue = clCreateCommandQueue(context, device, 0, &err);
     
+
+    // Open the kernel file.
+    std::ifstream kernelFile("OpenCL_KNN.cl");
+    if (!kernelFile.is_open()) {
+        std::cerr << "Failed to open kernel file!" << std::endl;
+        exit(1); // or handle the error appropriately
+    }
+
+    // Read the file into a string.
+    std::stringstream kernelStream;
+    kernelStream << kernelFile.rdbuf();
+    std::string kernelSourceStr = kernelStream.str();
+    const char* kernelSource = kernelSourceStr.c_str();
+
+    // ---------------------- PROGRAM BUILDING ----------------------
     size_t sourceSize = std::strlen(kernelSource);
     cl_program program = clCreateProgramWithSource(context, 1, &kernelSource, &sourceSize, &err);
     err = clBuildProgram(program, 1, &device, NULL, NULL, NULL);
+    // (For debugging, you may wish to check and print the build log on error.)
     
     cl_kernel kernel = clCreateKernel(program, "computeDistance", &err);
 
-    // Get unique y-values and determine group sizes
+    // ---------------------- DATA PRE-PROCESSING ----------------------
+    // Get unique y-values and determine group sizes.
     Rcpp::NumericVector yVals = Rcpp::unique(data_y);
     int numGroups = yVals.size();
-    Rcpp::NumericVector numXsPerY(numGroups);
+    int *numXsPerY = new int[numGroups];
     
-    // Allocate a contiguous host array for all x values (grouped by their y)
+    // Allocate a contiguous host array for all x values (grouped by their y).
     int total_x_size = data_x.size();
     float* x_allValues = new float[total_x_size];
     
     int last_index = 0;
     for (int i = 0; i < numGroups; i++) {
-        // Subset data_x corresponding to the current y value
+        // Shoplifted from Andrew's code.
+        // Takes all the x's that correspond to a particular y value.
         Rcpp::NumericVector subset_x = data_x[data_y == yVals[i]];
-        // Copy the subset for this y value into our array
+        // Copy the subset for this y value into our contiguous array.
         std::copy(subset_x.begin(), subset_x.end(), x_allValues + last_index);
         numXsPerY[i] = subset_x.size();
         last_index += subset_x.size();
     }
     
-    // Allocate host arrays for distances and results (size as needed)
+    // Allocate host arrays for distances and results (same total size as x_allValues).
     float* distances = new float[total_x_size];
     float* results   = new float[total_x_size];
     
-    //---Create our OpenCL Buffers ---
-    cl_mem xBuffer = clCreateBuffer(context,CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(float) * total_x_size, x_allValues, &err);
+    // ---------------------- OPENCL BUFFER CREATION ----------------------
+    // xBuffer is read-only (and we use CL_MEM_COPY_HOST_PTR to initialize it).
+    cl_mem xBuffer = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
+                                    sizeof(float) * total_x_size, x_allValues, &err);
     
-    cl_mem distancesBuffer = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(float) * total_x_size, NULL, &err);
+    // distancesBuffer: read-write because we both write to and later read from it.
+    cl_mem distancesBuffer = clCreateBuffer(context, CL_MEM_READ_WRITE,
+                                            sizeof(float) * total_x_size, NULL, &err);
     
-    cl_mem resultsBuffer = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(float) * total_x_size, NULL, &err);
+    // resultsBuffer: read-write since we'll use it for intermediate per-y results.
+    cl_mem resultsBuffer = clCreateBuffer(context, CL_MEM_READ_WRITE,
+                                          sizeof(float) * total_x_size, NULL, &err);
     
-    // For numXsPerY, we copy data from the Rcpp vector.
-    // Note: Rcpp::NumericVector elements are doubles, so convert to int if needed.
-    std::vector<int> numXs(numGroups);
-    for (int i = 0; i < numGroups; i++) {
-        numXs[i] = static_cast<int>(numXsPerY[i]);
-    }
-    cl_mem numXsBuffer = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(int) * numGroups,numXs.data(), &err);
+    // <<BUG FIX>>: Here, the host pointer is incorrectly passed.
+    // Instead of using "numXsBuffer" as the host pointer, it must be "numXsPerY".
+    cl_mem numXsBuffer = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
+                                        sizeof(int) * numGroups, numXsPerY, &err);
     
-    // --- Set Kernel Arguments ---
+    // Buffer for the final aggregated result.
+    cl_mem finalResult = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(float), NULL, &err);
+    // (Note: The kernel overwrites *finalResult, so pre-initialization to 0 isn't strictly required here.)
+    
+    // ---------------------- SETTING KERNEL ARGUMENTS ----------------------
     err  = clSetKernelArg(kernel, 0, sizeof(cl_mem), &xBuffer);
     err |= clSetKernelArg(kernel, 1, sizeof(cl_mem), &distancesBuffer);
     err |= clSetKernelArg(kernel, 2, sizeof(cl_mem), &resultsBuffer);
     err |= clSetKernelArg(kernel, 3, sizeof(cl_mem), &numXsBuffer);
     err |= clSetKernelArg(kernel, 4, sizeof(int), &total_x_size);
     err |= clSetKernelArg(kernel, 5, sizeof(int), &numGroups);
+    err |= clSetKernelArg(kernel, 6, sizeof(int), &K);
+    // <<BUG FIX>>: Missing setting for kernel argument index 7.
+    err |= clSetKernelArg(kernel, 7, sizeof(cl_mem), &finalResult);
     
-    // launch our kernel. 
-    size_t globalWorkSize = total_x_size;  // For example, one work-item per x value
+    // ---------------------- KERNEL LAUNCH ----------------------
+    // Global work size: you set it to total_x_size (i.e. one work-item per x value).
+    // However, note that your kernel uses get_group_id() and get_global_size() in its loops.
+    // Make sure that this choice is consistent with your design!
+    size_t globalWorkSize = total_x_size;  // <<CHECK>>: Verify that total_x_size is an appropriate global size.
     err = clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &globalWorkSize, NULL, 0, NULL, NULL);
     clFinish(queue);
     
-    // get our results back. we actually only need one single float back, since we aggregate the entire results array into one float.
-    err = clEnqueueReadBuffer(queue, resultsBuffer, CL_TRUE, 0, sizeof(float) * total_x_size, results, 0, NULL, NULL);
+    // ---------------------- READ BACK RESULT ----------------------
+    float finalResultValue;
+    err = clEnqueueReadBuffer(queue, finalResult, CL_TRUE, 0, sizeof(float),
+                              &finalResultValue, 0, NULL, NULL);
     
-    // Cleanup OpenCL objects
+    // ---------------------- CLEANUP OPENCL OBJECTS ----------------------
     clReleaseMemObject(xBuffer);
     clReleaseMemObject(distancesBuffer);
     clReleaseMemObject(resultsBuffer);
     clReleaseMemObject(numXsBuffer);
+    clReleaseMemObject(finalResult);
     clReleaseKernel(kernel);
     clReleaseProgram(program);
     clReleaseCommandQueue(queue);
     clReleaseContext(context);
     
-    // Cleanup host memory
+    // ---------------------- CLEANUP HOST MEMORY ----------------------
     delete [] x_allValues;
     delete [] distances;
     delete [] results;
+    delete [] numXsPerY;
     
-    return 0;
+    return finalResultValue;
 }
