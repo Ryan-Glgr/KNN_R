@@ -52,6 +52,7 @@ Rcpp::NumericVector kNN(Rcpp::NumericVector data, int k)
         }
 
         // Find the k-th smallest distance using nth_element (more efficient than sorting)
+        // rearranges so that we can access the kth element.
         std::nth_element(dist.begin(), dist.begin() + k, dist.end());
         float Ri = dist[k]; // k-th nearest distance
 

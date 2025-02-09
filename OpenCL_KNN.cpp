@@ -89,8 +89,11 @@ float launchKernel(Rcpp::NumericVector data_x, Rcpp::NumericVector data_y, int K
     
     // Buffer for the final aggregated result.
     cl_mem finalResult = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(float), NULL, &err);
-    // (Note: The kernel overwrites *finalResult, so pre-initialization to 0 isn't strictly required here.)
-    
+
+    // Buffer for the mergeTemp.
+    cl_mem mergeTempBuffer = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(float) * total_x_size, NULL, &err);
+
+
     // ---------------------- SETTING KERNEL ARGUMENTS ----------------------
     err  = clSetKernelArg(kernel, 0, sizeof(cl_mem), &xBuffer);
     err |= clSetKernelArg(kernel, 1, sizeof(cl_mem), &distancesBuffer);
@@ -99,15 +102,11 @@ float launchKernel(Rcpp::NumericVector data_x, Rcpp::NumericVector data_y, int K
     err |= clSetKernelArg(kernel, 4, sizeof(int), &total_x_size);
     err |= clSetKernelArg(kernel, 5, sizeof(int), &numGroups);
     err |= clSetKernelArg(kernel, 6, sizeof(int), &K);
-    // <<BUG FIX>>: Missing setting for kernel argument index 7.
     err |= clSetKernelArg(kernel, 7, sizeof(cl_mem), &finalResult);
+    err |= clSetKernelArg(kernel, 8, sizeof(cl_mem), &mergeTempBuffer);
     
     // ---------------------- KERNEL LAUNCH ----------------------
-    // Global work size: you set it to total_x_size (i.e. one work-item per x value).
-    // However, note that your kernel uses get_group_id() and get_global_size() in its loops.
-    // Make sure that this choice is consistent with your design!
-    size_t globalWorkSize = total_x_size;  // <<CHECK>>: Verify that total_x_size is an appropriate global size.
-    err = clEnqueueNDRangeKernel(queue, kernel, 1, NULL, &globalWorkSize, NULL, 0, NULL, NULL);
+    err = clEnqueueNDRangeKernel(queue, kernel, 1, NULL, NULL, NULL, 0, NULL, NULL);
     clFinish(queue);
     
     // ---------------------- READ BACK RESULT ----------------------
@@ -121,6 +120,7 @@ float launchKernel(Rcpp::NumericVector data_x, Rcpp::NumericVector data_y, int K
     clReleaseMemObject(resultsBuffer);
     clReleaseMemObject(numXsBuffer);
     clReleaseMemObject(finalResult);
+    clReleaseMemObject(mergeTempBuffer);
     clReleaseKernel(kernel);
     clReleaseProgram(program);
     clReleaseCommandQueue(queue);
