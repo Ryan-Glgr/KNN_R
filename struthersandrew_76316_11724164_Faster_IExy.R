@@ -11,6 +11,7 @@ start_time <- proc.time()
 
 # Source C++ code
 sourceCpp("OpenCL_KNN.cpp")  # This file should export a function (e.g., launchKernel) that accepts a single k value
+sourceCpp("Faster_kNN_Implementation.cpp")
 
 # Read data using fread for faster processing
 Data <- fread("data.csv", skip = 2)
@@ -24,6 +25,12 @@ compute_IE <- function(data_x, data_y, ks) {
   return(results)
 }
 
+compute_IE_Andrew <- function(data_x, data_y, ks) {
+  # Same pattern: loop over all k in 'ks'
+  results <- sapply(ks, function(k) IE_xy(data_x, data_y, k))
+  return(results)
+}
+
 # Extract MATHEFF and MATINTFC from Data
 MATHEFF <- Data$MATHEFF
 MATINTFC <- Data$MATINTFC
@@ -34,10 +41,11 @@ k_values <- seq(5000, 20000, 2500)
 # Measure time and compute IE values
 system.time({
   # Call compute_IE so that each k value is processed individually.
+  result_Andrew <- compute_IE_Andrew(MATHEFF[1:50000], MATINTFC[1:50000], k_values)
+  print(result_Andrew)
   result <- compute_IE(MATHEFF[1:50000], MATINTFC[1:50000], k_values)
+  print(result)
 })
-
-print(result)
 
 # Plot the results (uncomment if desired)
 plot(k_values, result, xlab = "k", ylab = "IE(MATHEFF|MATINTFC)")
