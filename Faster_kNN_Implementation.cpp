@@ -1,7 +1,8 @@
 #include <Rcpp.h>
-#include <algorithm>
 #include <vector>
 #include <cmath>
+#include <algorithm>
+#include <omp.h>  // Ensure OpenMP is included
 
 #define DEBUG false
 
@@ -9,14 +10,15 @@
 int debug_count = 0;
 #endif
 
-/* Function signatures */
+using namespace Rcpp;
+
+/* Function Signatures */
 // Core functions
 float IE_xy(Rcpp::NumericVector data_x, Rcpp::NumericVector data_y, int k);
-Rcpp::NumericVector kNN(Rcpp::NumericVector data, int k);
+Rcpp::NumericVector kNN(const Rcpp::NumericVector& data, int k);
 
-// Helper functions
-void print_vector(Rcpp::NumericVector x);
-
+// Helper Function
+void print_vector(const Rcpp::NumericVector& x);
 
 /* Function Definitions */
 
@@ -25,8 +27,8 @@ void print_vector(Rcpp::NumericVector x);
   returns a vector of the kNN weights for each element of data.
   Uses std::nth_element for more efficient finding of the k-th smallest distance.
 */
-Rcpp::NumericVector kNN(Rcpp::NumericVector data, int k)
-{
+Rcpp::NumericVector kNN(const Rcpp::NumericVector& data, int k) {
+
     int N = data.size();
 
     // Set the value of k to N-1 in the case where k > N-1
@@ -41,21 +43,22 @@ Rcpp::NumericVector kNN(Rcpp::NumericVector data, int k)
     #pragma omp parallel
     {
         // Thread-local storage for distances
-        std::vector<float> dist(N);
+        std::vector<double> dist(N);  
 
         #pragma omp for schedule(static)
-        for (int i = 0; i < N; i++)
-        {
-            // Compute the absolute distances between data[i] and all other elements
+        for (int i = 0; i < N; i++) {
+            double x_i = data[i];
+
+            // Compute absolute distances in parallel
             for (int j = 0; j < N; j++) {
-                dist[j] = std::abs(data[i] - data[j]);
+                dist[j] = std::abs(x_i - data[j]);
             }
 
-            // Find the k-th smallest distance using nth_element (more efficient than sorting)
+            // Find the k-th smallest distance (original method)
             std::nth_element(dist.begin(), dist.begin() + k, dist.end());
-            float Ri = dist[k]; // k-th nearest distance
+            double Ri = dist[k]; // k-th nearest distance
 
-            // Append the kNN-approximated density for the i-th point to the result
+            // Compute density approximation
             result[i] = k / (N * 2 * Ri);
         }
     }
@@ -73,31 +76,28 @@ Rcpp::NumericVector kNN(Rcpp::NumericVector data, int k)
   Uses parallel reduction to incrementally calculate the final result.
 */
 // [[Rcpp::export]]
-float IE_xy(Rcpp::NumericVector data_x, Rcpp::NumericVector data_y, int k)
-{
+float IE_xy(Rcpp::NumericVector data_x, Rcpp::NumericVector data_y, int k) {
+
     // Use vectorization to find the unique subset of conditional y-values
     Rcpp::NumericVector yval = Rcpp::unique(data_y);
 
     // Store the result in a float, avoiding creating two separate arrays for IE and weight
     float result = 0;
 
+    int N = data_x.size();
+
     #pragma omp parallel for reduction(+:result) schedule(dynamic)
-    for (int i = 0; i < yval.size(); i++)
-    {
-        // Use vector logic to find the subset of x data that corresponds to this unique y-value
+    for (int i = 0; i < yval.size(); i++) {
         Rcpp::NumericVector x = data_x[data_y == yval[i]];
+        int x_size = x.size();  // Store size to avoid recomputation
 
-        // Calculate the conditional information energy using the kNN approximation
-        Rcpp::NumericVector kNN_result = kNN(x, k);
-        float IE = Rcpp::mean(kNN_result);
-
-        // Calculate the weight of the conditioned x vector (conditioned by the unique y-value)
-        float weight = (float)x.size() / (float)data_x.size();
-
-        // Multiply the information energy by the weight and add it to the result
-        result += IE * weight;
-
-#if DEBUG
+        if (x_size > 1) {
+            Rcpp::NumericVector kNN_result = kNN(x, k);
+            float IE = Rcpp::mean(kNN_result);
+            float weight = static_cast<float>(x_size) / static_cast<float>(N);
+            result += IE * weight;
+        }
+        #if DEBUG
         Rprintf("Condition vector: ");
         print_vector(x);
 
