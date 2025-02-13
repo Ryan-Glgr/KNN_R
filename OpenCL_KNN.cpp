@@ -3,7 +3,7 @@
 #include <sstream>
 #include <cstring>
 #include <algorithm>
-#include <OpenCL/cl.h>
+#include <CL/cl.h>
 #include <Rcpp.h>
 
 // [[Rcpp::export]]
@@ -23,29 +23,40 @@ double launchKernel(Rcpp::NumericVector data_x, Rcpp::NumericVector data_y, int 
     cl_command_queue queue = clCreateCommandQueue(context, device, 0, &err);
 
     //----------------------------------------------------
-    // 3) Build Program & Create fillDistanceMatrix Kernel
+    // 3) Build Programs and Create Kernels: These will be used to run the OpenCL code.
+    //    This is where the file references are made for OpenCL calls.
     //----------------------------------------------------
+
+    // Creates a file input stream called kernelFile which takes in the OpenCL code
     std::ifstream kernelFile("OpenCL_KNN.cl");
+    // Error value if there is failure opening the kernel
     if (!kernelFile.is_open()) {
-        Rcpp::Rcerr << "Failed to open kernel file!" << std::endl;
+        Rcpp::Rcerr << "Failed to open kernel file \"OpenCL_KNN.cl\"!" << std::endl;
         return -1.0;
     }
+
+    // Reads the kernel file into a string stream
     std::stringstream kernelStream;
     kernelStream << kernelFile.rdbuf();
+
+    // Stores the source code from the file into a c string
     std::string kernelSourceStr = kernelStream.str();
     const char* kernelSource = kernelSourceStr.c_str();
 
+    // Creates and builds the OpenCL program using the read-in source
     size_t sourceSize = std::strlen(kernelSource);
     cl_program program = clCreateProgramWithSource(context, 1, &kernelSource, &sourceSize, &err);
     err = clBuildProgram(program, 1, &device, NULL, NULL, NULL);
 
-    cl_kernel kernel = clCreateKernel(program, "fillDistanceMatrix", &err);
+    // Creates kernels for each function in the OpenCL file
+    cl_kernel kernel_dis = clCreateKernel(program, "fillDistanceMatrix", &err);
+    cl_kernel kernel_kth = clCreateKernel(program, "kth_element", &err);
 
     //----------------------------------------------------
     // 4) Unique Groups & Data Setup
     //----------------------------------------------------
     Rcpp::NumericVector yVals = Rcpp::unique(data_y);
-    int numGroups = yVals.size();
+    int numGroups = yVals.size(); // Stores the unique number of y values in the dataset
 
     double globalAccumulator = 0.0;
     int total_x_size = data_x.size();
@@ -56,67 +67,72 @@ double launchKernel(Rcpp::NumericVector data_x, Rcpp::NumericVector data_y, int 
     for (int g = 0; g < numGroups; g++) {
         // (a) Extract subset of x for yVals[g]
         Rcpp::NumericVector subset_x = data_x[data_y == yVals[g]];
-        int groupSize = subset_x.size();
+        int groupSize = subset_x.size(); // GroupSize is the size of x that fits within the set of unique ys
         if (groupSize == 0) {
             continue; // skip empty group
         }
 
         // (b) Copy subset to a float host array
         std::vector<float> hostXGroup(groupSize);
+
+        //
         for (int i = 0; i < groupSize; i++) {
             // cast from double (Rcpp) to float
             hostXGroup[i] = static_cast<float>(subset_x[i]);
         }
-
+        
         // (c) Create device buffers for xGroup & distanceMatrix (float)
-        cl_mem xGroupBuf = clCreateBuffer(context,
-                                          CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
-                                          groupSize * sizeof(float),
-                                          hostXGroup.data(),
-                                          &err);
+        // These will be used for all openCL calls. They store the memory partitions created to run the OpenCL code.
+        cl_mem xGroupBuf = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, groupSize * sizeof(float), hostXGroup.data(), &err);
+        cl_mem distanceMatrixBuf = clCreateBuffer(context, CL_MEM_READ_WRITE, groupSize * groupSize * sizeof(float), NULL, &err);
+        cl_mem resultBuf = clCreateBuffer(context, CL_MEM_READ_WRITE, groupSize * sizeof(double), NULL, &err);
+        
+        // (d) Calls the OpenCL to fill the distance matrix
+        // ------------------------------------------- START DIS ------------------------------------------- //
 
-        cl_mem distanceMatrixBuf = clCreateBuffer(context,
-                                                 CL_MEM_READ_WRITE,
-                                                 groupSize * groupSize * sizeof(float),
-                                                 NULL,
-                                                 &err);
+        // OpenCL_KNN.cl fillDistanceMatrix Call, creates xGroup as input and distanceMatrix as ouput
 
-        // (d) Set kernel args
-        err  = clSetKernelArg(kernel, 0, sizeof(cl_mem), &xGroupBuf);
-        err |= clSetKernelArg(kernel, 1, sizeof(cl_mem), &distanceMatrixBuf);
-        err |= clSetKernelArg(kernel, 2, sizeof(int), &groupSize);
+        // (1) Set kernel args
+        err  = clSetKernelArg(kernel_dis, 0, sizeof(cl_mem), &xGroupBuf);
+        err |= clSetKernelArg(kernel_dis, 1, sizeof(cl_mem), &distanceMatrixBuf);
+        err |= clSetKernelArg(kernel_dis, 2, sizeof(int), &groupSize);
 
-        // (e) Enqueue kernel (2D NDRange)
-        size_t globalWorkSize[2] = { (size_t)groupSize, (size_t)groupSize };
-        err = clEnqueueNDRangeKernel(queue, kernel, 2, NULL, globalWorkSize,
-                                     NULL, 0, NULL, NULL);
+        // (2) Enqueue kernel (2D NDRange) - Runs the kernel program
+        size_t globalWorkSize0[2] = { (size_t)groupSize, (size_t)groupSize };
+        err = clEnqueueNDRangeKernel(queue, kernel_dis, 2, NULL, globalWorkSize0, NULL, 0, NULL, NULL);
+        // Waits for the kernel to finish before executing any more code
         clFinish(queue);
 
-        // (f) Read back the NxN distance matrix to host in float
-        std::vector<float> hostDistanceMatrix(groupSize * groupSize);
-        err = clEnqueueReadBuffer(queue,
-                                  distanceMatrixBuf,
-                                  CL_TRUE,
-                                  0,
-                                  groupSize * groupSize * sizeof(float),
-                                  hostDistanceMatrix.data(),
-                                  0, NULL, NULL);
+        // -------------------------------------------- END DIS -------------------------------------------- //
 
-        // (g) Perform the KNN logic on the host
-        Rcpp::NumericVector result(groupSize);
-        for (int row = 0; row < groupSize; row++) {
-            // rowPtr is float-based
-            float* rowPtr = &hostDistanceMatrix[row * groupSize];
+        // (e) Calls the OpenCL to get the K smallest element
+        // ------------------------------------------- START KTH ------------------------------------------- //
 
-            // Suppose groupSize = N
-            int kClamped = (K > groupSize - 1) ? (groupSize - 1) : K;
+        // OpenCL_KNN.cl kth_element Call, the same memory from KNN is used
 
-            // Then use kClamped both for nth_element and for the formula
-            std::nth_element(rowPtr, rowPtr + kClamped, rowPtr + groupSize);
-            float Ri = rowPtr[kClamped];
+        // (1) Set kernel args
+        err |= clSetKernelArg(kernel_kth, 0, sizeof(cl_mem), &distanceMatrixBuf);
+        err |= clSetKernelArg(kernel_kth, 1, sizeof(cl_mem), &resultBuf);
+        err |= clSetKernelArg(kernel_kth, 2, sizeof(int), &groupSize);
+        err |= clSetKernelArg(kernel_kth, 3, sizeof(int), &K);
 
-            result[row] = kClamped / (groupSize * 2.0f * Ri);
-        }
+        // (2) Enqueue kernel (2D NDRange) - Runs the kernel program
+        size_t globalWorkSize1[2] = { (size_t)groupSize, (size_t)groupSize };
+        err = clEnqueueNDRangeKernel(queue, kernel_kth, 1, NULL, globalWorkSize1, NULL, 0, NULL, NULL);
+        // Waits for the kernel to finish before executing any more code
+        clFinish(queue);
+
+        // -------------------------------------------- END KTH -------------------------------------------- //
+
+        // (f) Read back the N result vector to host in double
+        
+        // Creates a vector to store the results
+        std::vector<double> resultDbl(groupSize);
+        // Reads the results from the OpenCL program
+        err = clEnqueueReadBuffer(queue, resultBuf, CL_TRUE, 0, groupSize * sizeof(double), resultDbl.data(), 0, NULL, NULL);
+        // Converts the results to a NumericVector
+        Rcpp::NumericVector result(resultDbl.begin(), resultDbl.end());
+
 
         // (h) Average for this group
         double IE = Rcpp::mean(result);
@@ -129,13 +145,15 @@ double launchKernel(Rcpp::NumericVector data_x, Rcpp::NumericVector data_y, int 
 
         // (i) Release buffers
         clReleaseMemObject(xGroupBuf);
+        clReleaseMemObject(resultBuf);
         clReleaseMemObject(distanceMatrixBuf);
     }
 
     // ---------------------------------------------------
     // 6) Cleanup & Return
     // ---------------------------------------------------
-    clReleaseKernel(kernel);
+    clReleaseKernel(kernel_dis);
+    clReleaseKernel(kernel_kth);
     clReleaseProgram(program);
     clReleaseCommandQueue(queue);
     clReleaseContext(context);
