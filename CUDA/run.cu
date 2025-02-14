@@ -1,17 +1,20 @@
 #include "testCuda.cuh"
+#include <chrono>
 
-void callKernel(int* vec1, int* vec2, int* vec3, int size) {
-	run(vec1, vec2, vec3, size);
+// calculates the time from the given start time to now, resets the start time to now, then returns as seconds the time elapsed.
+long double calculateTime (std::chrono::time_point<std::chrono::high_resolution_clock>* start) {
+    auto end = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - *start);
+    *start = std::chrono::high_resolution_clock::now();
+    return (long double)end.count()/1000000.0;
 }
 
 extern "C" __declspec(dllexport)
-void runKernel (int* vec1, int* vec2, int* res, int* size) {
-	callKernel(vec1, vec2, res, *size);
+void runKernel (double* vec1, int* size1, double* vec2, int* size2, int* k) {
+    auto start = std::chrono::high_resolution_clock::now();
+    run(vec1, *size1, vec2, *size2, *k);
 	cudaDeviceSynchronize();
+    std::cout << "Time Elapsed: " << calculateTime(&start) << std::endl;
 
-	for (int a = 0; a < *size; a++) {
-		printf("%i ", res[a]);
-	}
 
 	fflush(stdout);
 }
