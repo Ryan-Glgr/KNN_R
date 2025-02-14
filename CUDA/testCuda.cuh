@@ -91,7 +91,7 @@ void run (double* data_x, int size1, double* data_y, int size2, int k) {
 
 
     double result = 0;
-    // 5gb max heap size
+    // 2gb max heap size
     cudaError_t err = cudaDeviceSetLimit(cudaLimitMallocHeapSize, 2147483648);
 
     std::cout << "yval size: " << yval.size() << std::endl;
@@ -146,7 +146,7 @@ void run (double* data_x, int size1, double* data_y, int size2, int k) {
 
 
 
-
+// THE OLD CODE GRAVEYARD IN CASE I NEED IT
 
 
 
