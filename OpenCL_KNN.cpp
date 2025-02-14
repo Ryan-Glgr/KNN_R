@@ -85,7 +85,7 @@ double launchKernel(Rcpp::NumericVector data_x, Rcpp::NumericVector data_y, int 
         // These will be used for all openCL calls. They store the memory partitions created to run the OpenCL code.
         cl_mem xGroupBuf = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, groupSize * sizeof(float), hostXGroup.data(), &err);
         cl_mem distanceMatrixBuf = clCreateBuffer(context, CL_MEM_READ_WRITE, groupSize * groupSize * sizeof(float), NULL, &err);
-        cl_mem resultBuf = clCreateBuffer(context, CL_MEM_READ_WRITE, groupSize * sizeof(double), NULL, &err);
+        cl_mem resultBuf = clCreateBuffer(context, CL_MEM_READ_WRITE, groupSize * sizeof(float), NULL, &err);
         
         // (d) Calls the OpenCL to fill the distance matrix
         // ------------------------------------------- START DIS ------------------------------------------- //
@@ -117,7 +117,7 @@ double launchKernel(Rcpp::NumericVector data_x, Rcpp::NumericVector data_y, int 
         err |= clSetKernelArg(kernel_kth, 3, sizeof(int), &K);
 
         // (2) Enqueue kernel (2D NDRange) - Runs the kernel program
-        size_t globalWorkSize1[2] = { (size_t)groupSize, (size_t)groupSize };
+        size_t globalWorkSize1[1] = { (size_t)groupSize };
         err = clEnqueueNDRangeKernel(queue, kernel_kth, 1, NULL, globalWorkSize1, NULL, 0, NULL, NULL);
         // Waits for the kernel to finish before executing any more code
         clFinish(queue);
@@ -126,22 +126,87 @@ double launchKernel(Rcpp::NumericVector data_x, Rcpp::NumericVector data_y, int 
 
         // (f) Read back the N result vector to host in double
         
+        
+        // Try to skip reading back the result.
+     
+   /////////////////////////////////////////////////////////////////////////////////////////////////////  
+    
+     
+
+
+     // Create kernel
+     cl_kernel kernel_mean = clCreateKernel(program, "mean_reduction", &err);
+     cl_kernel kernel_final = clCreateKernel(program, "final_mean_reduction", &err);
+     
+     // Allocate a buffer for intermediate results (double buffering)
+     cl_mem resultBuf2 = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(float) * groupSize, NULL, &err); // Double buffer for intermediate results
+     
+     // Set kernel arguments for mean_reduction kernel
+     err  = clSetKernelArg(kernel_mean, 0, sizeof(cl_mem), &resultBuf);  // Input data
+     err |= clSetKernelArg(kernel_mean, 1, sizeof(cl_mem), &resultBuf2); // Output to double buffer
+     err |= clSetKernelArg(kernel_mean, 2, sizeof(int), &groupSize);     // Array size
+     err |= clSetKernelArg(kernel_mean, 3, 256 * sizeof(float), NULL);  // Local memory allocation (for partial sums)
+     
+     // Define work sizes
+     size_t localWorkSize = 256;
+     size_t globalWorkSize = ((groupSize + localWorkSize - 1) / localWorkSize) * localWorkSize;
+     
+     // Execute the mean reduction kernel
+     err = clEnqueueNDRangeKernel(queue, kernel_mean, 1, NULL, &globalWorkSize, &localWorkSize, 0, NULL, NULL);
+     clFinish(queue);
+     
+     // Allocate a buffer for final result
+     cl_mem finalMeanBuf = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(float), NULL, &err);
+     
+     // Initialize finalMeanBuf to 0
+     float zero = 0.0f;
+     clEnqueueWriteBuffer(queue, finalMeanBuf, CL_TRUE, 0, sizeof(float), &zero, 0, NULL, NULL);
+     
+     // Set arguments for final reduction kernel
+     err = clSetKernelArg(kernel_final, 0, sizeof(cl_mem), &resultBuf2);  // Using double buffer as input
+     err |= clSetKernelArg(kernel_final, 1, sizeof(cl_mem), &finalMeanBuf);
+     err |= clSetKernelArg(kernel_final, 2, sizeof(int), &numGroups);
+     
+     // Execute final reduction kernel with 1 workgroup
+     size_t globalWorkSize3 = ((numGroups + localWorkSize - 1) / localWorkSize) * localWorkSize;
+     clEnqueueNDRangeKernel(queue, kernel_final, 1, NULL, &globalWorkSize3, &localWorkSize, 0, NULL, NULL);
+     clFinish(queue);
+     
+     // Read back final mean
+     float GPU_IE[1] = {0.0f};
+     clEnqueueReadBuffer(queue, finalMeanBuf, CL_TRUE, 0, sizeof(float), &GPU_IE, 0, NULL, NULL);
+     printf("GPU_IE: %f\n", GPU_IE[0]);  // Correct format specifier for float
+     
+     /////////////////////////////////////////////////////////////////////////////////
+        
+        
+        
+        
+        
+        
+        
+        
+        
         // Creates a vector to store the results
-        std::vector<double> resultDbl(groupSize);
+        //std::vector<double> resultDbl(groupSize);
         // Reads the results from the OpenCL program
-        err = clEnqueueReadBuffer(queue, resultBuf, CL_TRUE, 0, groupSize * sizeof(double), resultDbl.data(), 0, NULL, NULL);
+        //err = clEnqueueReadBuffer(queue, resultBuf, CL_TRUE, 0, groupSize * sizeof(double), resultDbl.data(), 0, NULL, NULL);
         // Converts the results to a NumericVector
-        Rcpp::NumericVector result(resultDbl.begin(), resultDbl.end());
+        //Rcpp::NumericVector result(resultDbl.begin(), resultDbl.end());
 
 
         // (h) Average for this group
-        double IE = Rcpp::mean(result);
-
+        //double IE = Rcpp::mean(result);
+        //printf("IE: %d\n", IE);
+        //printf("IE_GPU: %d\n", IE_GPU);
+          
         // Weighted by group size
         double weight = static_cast<double>(groupSize) / static_cast<double>(total_x_size);
 
         // accumulate
-        globalAccumulator += IE * weight;
+        //globalAccumulator += IE_GPU * weight;
+        globalAccumulator += GPU_IE[0] * weight;
+        
 
         // (i) Release buffers
         clReleaseMemObject(xGroupBuf);
