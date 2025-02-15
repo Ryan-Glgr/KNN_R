@@ -5,6 +5,10 @@ install.packages("Rcpp", repos = "https://cran.rstudio.com/")
 # Load required libraries
 library("Rcpp")
 library("data.table")
+
+Sys.setenv("PKG_CXXFLAGS"="-fopenmp")
+Sys.setenv("PKG_LIBS"="-fopenmp")
+
 start_time <- proc.time()
 
 # Source C++ code

@@ -2,7 +2,7 @@
 #include <vector>
 #include <cmath>
 #include <algorithm>
-#include <omp.h>  // Ensure OpenMP is included
+#include <omp.h>
 
 #define DEBUG false
 
