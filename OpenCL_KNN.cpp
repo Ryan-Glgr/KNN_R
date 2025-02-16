@@ -124,22 +124,65 @@ double launchKernel(Rcpp::NumericVector data_x, Rcpp::NumericVector data_y, int 
 
         // -------------------------------------------- END KTH -------------------------------------------- //
 
+        // How is the reduction working if we aren't
+        // trimming the arVal array?
+        cl_kernel partial_means = clCreateKernel(program, "partial_means", &err);
+        cl_kernel partial_mean_sums = clCreateKernel(program, "sum_partial_means", &err);
+
+        // Launch partial_mean kernel
+        clSetKernelArg(partial_means, 0, sizeof(cl_mem), &resultBuf);// array
+        clSetKernelArg(partial_means, 1, sizeof(int), &groupSize);  // array size
+
+
+
+
+        // Launch parallel sum reduction kernel
+
+
+        // Attempt a parallel mean calculation
+        int workgroupSize = 256;
+
+        // initial size of resultBuf
+        int size = groupSize;
+
+        int num_workgroups = (size + workgroup_size - 1) / workgroup_size;
+        cl_mem localData = clCreateBuffer(context, CL_MEM_LOCAL, workgroupSize * sizeof(float), NULL, &err);
+
+        clSetKernelArg(sum_partial_means, 0, sizeof(cl_mem), &resultBuf);  // array
+        clSetKernelArg(sum_partial_means, 1, sizeof(cl_mem), &localData);  // local memory buffer
+        clSetKernelArg(sum_partial_means, 2, sizeof(int), &size);  // array size
+        clSetKernelArg(sum_partial_means, 3, sizeof(int), &workgroupSize);  // workgroup size
+
+        clEnqueueNDRangeKernel(queue, sum_partial_means, 1, NULL, &num_workgroups, &workgroup_size, 0, NULL, NULL);
+
+        while(num_workgroups > 1){
+            size = num_workgroups;
+
+            num_workgroups = (size + workgroup_size - 1) / workgroup_size;
+
+            clEnqueueNDRangeKernel(queue, sum_partial_means, 1, NULL, &num_workgroups, &workgroup_size, 0, NULL, NULL);
+        }
+
+        // Load value to IE
+        float IE;
+        clEnqueueReadBuffer(queue, arVal, CL_TRUE, 0, sizeof(float), &IE, 0, NULL, NULL);
+
+
+        /*
         // (f) Read back the N result vector to host in double
-        
         // Creates a vector to store the results
         std::vector<double> resultDbl(groupSize);
         // Reads the results from the OpenCL program
         err = clEnqueueReadBuffer(queue, resultBuf, CL_TRUE, 0, groupSize * sizeof(double), resultDbl.data(), 0, NULL, NULL);
         // Converts the results to a NumericVector
         Rcpp::NumericVector result(resultDbl.begin(), resultDbl.end());
-
-
         // (h) Average for this group
         double IE = Rcpp::mean(result);
+        */
 
         // Weighted by group size
         double weight = static_cast<double>(groupSize) / static_cast<double>(total_x_size);
-
+        IE = static_cast<double>(IE);
         // accumulate
         globalAccumulator += IE * weight;
 
@@ -147,6 +190,7 @@ double launchKernel(Rcpp::NumericVector data_x, Rcpp::NumericVector data_y, int 
         clReleaseMemObject(xGroupBuf);
         clReleaseMemObject(resultBuf);
         clReleaseMemObject(distanceMatrixBuf);
+        clReleaseMemObject(localData);
     }
 
     // ---------------------------------------------------
