@@ -12,7 +12,7 @@ __kernel void fillDistanceMatrix(__global const float* xGroup,
 }
 
 __kernel void kth_element(__global float* distanceMatrix,
-                          __global double* result,
+                          __global float* result,
                                  const int groupSize,
                                  const int K)
 {
@@ -92,8 +92,6 @@ __kernel void kth_element(__global float* distanceMatrix,
     result[i] = kClamped / (groupSize * 2.0f * Ri);
 
 }
-
-
 
 
 // This is the first part of the mean calculations

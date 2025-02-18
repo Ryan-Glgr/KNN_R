@@ -52,21 +52,24 @@ y_sub <- MATINTFC[1:N]
 # -------------------------------------------------------------------
 # Timed CPU computation
 # -------------------------------------------------------------------
-cat("\n--- CPU/C++ Version Timing ---\n")
-t_cpu <- system.time({
-  result_cpu <- compute_IE_Cpp(x_sub, y_sub, k_values)
-})
-cat("CPU results:\n")
-print(result_cpu)
-cat("CPU user time:   ", t_cpu["user.self"], " seconds\n")
-cat("CPU system time: ", t_cpu["sys.self"], " seconds\n")
-cat("CPU elapsed time:", t_cpu["elapsed"],   " seconds\n\n")
+#cat("\n--- CPU/C++ Version Timing ---\n")
+#t_cpu <- system.time({
+#  result_cpu <- compute_IE_Cpp(x_sub, y_sub, k_values)
+#})
+#cat("CPU results:\n")
+#print(result_cpu)
+#cat("CPU user time:   ", t_cpu["user.self"], " seconds\n")
+#cat("CPU system time: ", t_cpu["sys.self"], " seconds\n")
+#cat("CPU elapsed time:", t_cpu["elapsed"],   " seconds\n\n")
 
 # -------------------------------------------------------------------
 # Timed GPU (OpenCL) computation
 # -------------------------------------------------------------------
 cat("--- OpenCL/GPU Version Timing ---\n")
 t_gpu <- system.time({
+  #compute_IE_OpenCL(x_sub, y_sub, k_values)
+  #compute_IE_OpenCL(x_sub, y_sub, k_values)
+  #compute_IE_OpenCL(x_sub, y_sub, k_values)
   result_gpu <- compute_IE_OpenCL(x_sub, y_sub, k_values)
 })
 cat("GPU/OpenCL results:\n")
