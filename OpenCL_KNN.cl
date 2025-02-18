@@ -94,42 +94,51 @@ __kernel void kth_element(__global float* distanceMatrix,
 }
 
 
-
-__kernel void mean_reduction(__global float* data, __global float* result, int size) {
-    __local float shared_data[256];  // Local memory for partial sum
-
+// This is the first part of the mean calculations
+// Each element will go through and do xi / len(result)
+__kernel void partial_means(__global float* result, int size){
     int global_id = get_global_id(0);
-    int local_id = get_local_id(0);
-    int local_size = get_local_size(0);
 
-    // Load data into shared memory
-    float value = (global_id < size) ? data[global_id] : 0.0f;
-    shared_data[local_id] = value;
-    barrier(CLK_LOCAL_MEM_FENCE);  // Synchronize threads within the workgroup
-
-    // Reduction in local memory
-    for (int stride = local_size / 2; stride > 0; stride /= 2) {
-        if (local_id < stride) {
-            shared_data[local_id] += shared_data[local_id + stride];
-        }
-        barrier(CLK_LOCAL_MEM_FENCE);  // Synchronize after each reduction step
-    }
-
-    // Store the result in the output buffer
-    if (local_id == 0) {
-        result[get_group_id(0)] = shared_data[0];
+    if (global_id < size) {
+        result[global_id] /= size;
     }
 }
 
-__kernel void final_mean_reduction(__global float* partial_results, __global float* final_result, int num_partials) {
-    int global_id = get_global_id(0);
-    float sum = 0.0f;
 
-    // Sum partial results across work items
-    for (int i = global_id; i < num_partials; i += get_global_size(0)) {
-        sum += partial_results[i];
+// this is the second part of the mean calculation
+// We use reduction to calculate a partial sum of elements until we get small
+// enough
+__kernel void sum_partial_means(__global float *result, __local float *sharedMem, int size){
+    int gid = get_global_id(0);
+    int localId = get_local_id(0);
+    int groupSize = get_local_size(0);
+
+    // Load data into local (shared in cuda) memory
+    if (gid < size){
+        sharedMem[localId] = result[gid];
+    }
+    else {
+        // Pad with zero if global id is out of bounds
+        sharedMem[localId] = 0.0f; 
     }
 
-    // Atomically add to the final result
-    atomic_add(final_result, sum);
+    // __syncThreads()
+    barrier(CLK_LOCAL_MEM_FENCE);
+
+    // reduction within the workgroup
+    for (int stride = 1; stride < groupSize; stride *= 2){
+
+        int index = 2 * stride * localId;
+        if (index < groupSize && index + stride < groupSize){
+            sharedMem[index] += sharedMem[index + stride];
+        }
+
+        // __syncThreads
+        barrier(CLK_LOCAL_MEM_FENCE);
+    }
+
+    // write result for this group to global mem
+    if (localId == 0){
+        result[get_group_id(0)] = sharedMem[0];
+    }
 }
