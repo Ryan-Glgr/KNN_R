@@ -4,6 +4,22 @@
 #include <set>
 #include <iostream>
 #include <thrust/sort.h>
+#include <chrono>
+
+#define PROFILE false
+#define threadsPerBlock 128
+
+auto profileClock = std::chrono::high_resolution_clock::now();
+long double runTime = 0;
+
+// calculates the time from the given start time to now, resets the start time to now, then returns as seconds the time elapsed.
+long double calculateTime () {
+    auto end = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - profileClock);
+    profileClock = std::chrono::high_resolution_clock::now();
+    long double val = (long double)end.count()/1000000.0;
+    runTime += val;
+    return val;
+}
 
 // code for the function below was provided by this stack overflow article: https://stackoverflow.com/questions/12200486/how-to-remove-duplicates-from-unsorted-stdvector-while-keeping-the-original-or
 // by a user named Yury.
@@ -25,8 +41,16 @@ size_t removeDuplicates(std::vector<T>& vec) {
 }
 
 
-__global__ void gpukNN (double* x, int size, int k, double* result) {
+__global__ void gpukNN (double* x, int size, int k, float* testResult) {
     unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
+    // block memory for reduction
+    __shared__ float* blockResult;
+    if (threadIdx.x == 0) {
+        blockResult = (float*)malloc(sizeof(float));
+        *blockResult = 0;
+    }
+
+    // knn calculation
     if (i < size) {
         // distance vector
         int pos = i * size;
@@ -38,15 +62,25 @@ __global__ void gpukNN (double* x, int size, int k, double* result) {
         //sort
         thrust::sort(thrust::seq, &x[pos], &x[pos+size]);
 
-        double Ri = x[pos+k];
-        result[i] = k / (size * 2 * Ri);
+        atomicAdd(blockResult, (float)(k / (size * 2 * x[pos+k])));
+    }
+    __syncthreads();
+
+    // reduce
+    if (threadIdx.x == 0) {
+        atomicAdd(testResult, *blockResult);
+        free(blockResult);
     }
 }
 
+__global__ void multiWrite (double* memoryLocation, double* values, int size) {
+    unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
+    if (i < size) {
+        memcpy(&memoryLocation[i*size], values, sizeof(double)*size);
+    }
+}
 
-// 32 for now before i try balancing it better later.
-#define threadsPerBlock 32
-std::vector<double>* kNN (std::vector<double> x, int k) {
+float kNN (std::vector<double> x, int k) {
     int N = x.size();
 
     if(k > N - 1) {
@@ -55,28 +89,51 @@ std::vector<double>* kNN (std::vector<double> x, int k) {
 
     // slicing into different chunks in the future maybe, if too big?
 
-    // create the 2d array containing our vector N times
+    #if PROFILE
+        std::cout << std::fixed <<"\tKNN Pre-Malloc: " << calculateTime() << std::endl;
+    #endif
+
+    // maybe allocate early on at max size, and just use sections?
+    double* devMatrixX;
+    cudaMalloc(&devMatrixX, sizeof(double) * N * N);
+
+    // vector to copy acrossed devMatrixX
     double* devX;
-    cudaMalloc(&devX, sizeof(double)*N*N);
-    for (int a = 0; a < N; a++) {
-        cudaMemcpy(&devX[a*x.size()], x.data(), sizeof(double)*x.size(), cudaMemcpyHostToDevice);
-    }
+    cudaMalloc(&devX, sizeof(double) * N);
+    cudaMemcpy(devX, x.data(), sizeof(double) * N, cudaMemcpyHostToDevice);
 
-    // create an array that will hold our result values.
-    double* devResult;
-    cudaMalloc(&devResult, sizeof(double)*N);
+    #if PROFILE
+        std::cout << std::fixed <<"\tKNN Memcpy: " << calculateTime() << std::endl;
+    #endif
 
-    gpukNN<<<ceil((float)N/threadsPerBlock), threadsPerBlock>>>(devX, N, k, devResult);
+    // have the kernel threads call memcpy N times
+    multiWrite<<<ceil((float)N/threadsPerBlock), threadsPerBlock>>>(devMatrixX, devX, N);
 
-    // free our 2d array from memory (maybe make global in future?)
+    #if PROFILE
+        std::cout << std::fixed <<"\tKNN Malloc: " << calculateTime() << std::endl;
+    #endif
+
+    // variable to store the reduced result
+    float* devResult;
+    cudaMalloc(&devResult, sizeof(float));
+
+    // do kNN calculation
+    gpukNN<<<ceil((float)N/threadsPerBlock), threadsPerBlock>>>(devMatrixX, N, k, devResult);
+
+    #if PROFILE
+        std::cout << std::fixed << "\tKNN kernel call: " << calculateTime() << std::endl;
+    #endif
+
+
+    // grab the result from the device.
+    float result = 0;
+    cudaMemcpy(&result, devResult, sizeof(float), cudaMemcpyDeviceToHost);
+    cudaFree(devMatrixX);
+    cudaFree(devResult);
     cudaFree(devX);
 
-    // copy our result buffer back and free the device pointer to it.
-    std::vector<double>* result = new std::vector<double>(N);
-    cudaMemcpy(result->data(), devResult, sizeof(double)*N, cudaMemcpyDeviceToHost);
-    cudaFree(devResult);
 
-    return result;
+    return result / N;
 }
 
 
@@ -85,18 +142,17 @@ void run (double* data_x, int size1, double* data_y, int size2, int k) {
     std::vector<double> yval{data_y, data_y + size2};
     removeDuplicates(yval);
 
-    // its just easier to make these std::vectors.
-    std::vector<double> dataX{data_y, data_y + size2};
-    std::vector<double> dataY{data_x, data_x + size1};
-
 
     double result = 0;
     // 2gb max heap size
-    cudaError_t err = cudaDeviceSetLimit(cudaLimitMallocHeapSize, 2147483648);
+    cudaDeviceSetLimit(cudaLimitMallocHeapSize, 2147483648);
 
-    std::cout << "yval size: " << yval.size() << std::endl;
-
+    // maybe a stream could be useful here?
     for(int i = 0; i < yval.size(); i++) {
+        #if PROFILE
+            std::cout << std::fixed << "Iteration " << i << " START:" << calculateTime() << std::endl;
+        #endif
+
         std::vector<double> x{};
         //equality vector
         for (int a = 0; a < size1; a++) {
@@ -105,23 +161,16 @@ void run (double* data_x, int size1, double* data_y, int size2, int k) {
             }
         }
 
-        std::vector<double>* kNN_result = kNN(x, k);
-
-        // calculate information energy
-        double IE = 0;
-        for (auto a : *kNN_result) {
-            IE += a;
-        }
-        IE /= kNN_result->size();
-        free(kNN_result);
+        // calculate the information energy
+        float IE = kNN(x, k);
 
         // calculate the weight and add it to the result.
         double weight = (double)x.size() / (double)size1;
-//        std::cout << "IE: " << IE << std::endl;
-//        std::cout << "Weight: " << weight <<std::endl;
-//        std::cout << "Value: " << IE*weight << std::endl;
         result += IE * weight;
-        fflush(stdout);
+
+        #if PROFILE
+            std::cout << std::fixed << "Iteration " << i << " END:" << calculateTime() << std::endl;
+        #endif
     }
     std::cout << "Final Result: " << result << std::endl;
 }
