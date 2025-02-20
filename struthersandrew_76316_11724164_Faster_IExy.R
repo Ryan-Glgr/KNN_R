@@ -76,3 +76,4 @@ cat("GPU system time: ", t_gpu["sys.self"], " seconds\n")
 cat("GPU elapsed time:", t_gpu["elapsed"],   " seconds\n\n")
 
 cat("All done.\n")
+

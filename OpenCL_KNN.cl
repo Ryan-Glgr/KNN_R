@@ -12,7 +12,7 @@ __kernel void fillDistanceMatrix(__global const float* xGroup,
 }
 
 __kernel void kth_element(__global float* distanceMatrix,
-                          __global double* result,
+                          __global float* result,
                                  const int groupSize,
                                  const int K)
 {
@@ -25,63 +25,59 @@ __kernel void kth_element(__global float* distanceMatrix,
     // Clamp k to the max group size
     int kClamped = (K > groupSize - 1) ? (groupSize - 1) : K;
     // Adjusts k to the correct position in the array
-    int kAdjusted = kClamped + i * groupSize;
+    int kAdjusted = kClamped + (i * groupSize);
 
     // ------------------------ START QUICKSELECT ------------------------ //
 
-    // Create starting points
-    int pivot = i * groupSize;
-    int lowerBound = pivot;
-    int upperBound = pivot + groupSize - 1;
+    int lowerBound = i * groupSize;
+    int upperBound = i * groupSize + groupSize - 1;
 
-    // Partition Counters
-    int left;
-    int right;
+    while (upperBound > lowerBound) {
 
-    // Iterate until pivot is equal to kClamped
-    while ( lowerBound < upperBound ) {
+        // -------------------- START PARTITION -------------------- //
+        // Creates starting points
+        int left = lowerBound - 1;
+        int right = upperBound + 1;
+    
+        // Sets the pivot to the first element in the array
+  	    int pivot = distanceMatrix[lowerBound];
 
-        // Partitioning (Hoare's Algorithm)
-        pivot = lowerBound;
-        left = lowerBound - 1;
-        right = upperBound + 1;
-
-        // Partition the numbers
-        while (left < right) {
-            
-            // Increment on the left until left >= pivot
-            do {
+        // Loops to partition
+  	    while (true) {
+      
+      	    // Find element larger than pivot
+      	    do {
                 left++;
-            } while (distanceMatrix[left] < distanceMatrix[pivot]);
+            } while (distanceMatrix[left] < pivot && left < upperBound);
 
-            // Increment on the right until right <= pivot
+      	    // Find element smaller than pivot
             do {
                 right--;
-            } while (distanceMatrix[right] > distanceMatrix[pivot]);
-            
-            // Swap if left < right
+            } while (distanceMatrix[right] > pivot && right > lowerBound);
+      	
+      	    // If left and right cross, break;
+            if (left >= right) {break;}
+      	
+      	    // Swap if left and right don't cross
             if (left < right) {
                 float temp = distanceMatrix[left];
                 distanceMatrix[left] = distanceMatrix[right];
                 distanceMatrix[right] = temp;
             }
         }
+        // -------------------- END PARTITION -------------------- //
 
-        // Sets the new pivot to the right element
-        pivot = right;
-
-        // If the pivot is less than k, re-adjust to the upper-bound
-        if (pivot < kAdjusted) {
-            lowerBound = pivot+1;
-        // If the pivot is less than k, re-adjust to the lower-bound
-        } else if (pivot > kAdjusted) {
-            upperBound = pivot;
-        // If the pivot is the k, break the loop
-        } else if (pivot == kAdjusted) {
+        // Adjusts the bounds of the algorithm given
+        // the position relative to the pivot
+        if (kAdjusted == right) {
             break;
+        } else if (kAdjusted < right) {
+            upperBound = right - 1;
+        } else {
+            lowerBound = right + 1;
         }
-    }
 
+    }
     // ------------------------- END QUICKSELECT ------------------------- //
 
 

@@ -85,7 +85,7 @@ double launchKernel(Rcpp::NumericVector data_x, Rcpp::NumericVector data_y, int 
         // These will be used for all openCL calls. They store the memory partitions created to run the OpenCL code.
         cl_mem xGroupBuf = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, groupSize * sizeof(float), hostXGroup.data(), &err);
         cl_mem distanceMatrixBuf = clCreateBuffer(context, CL_MEM_READ_WRITE, groupSize * groupSize * sizeof(float), NULL, &err);
-        cl_mem resultBuf = clCreateBuffer(context, CL_MEM_READ_WRITE, groupSize * sizeof(double), NULL, &err);
+        cl_mem resultBuf = clCreateBuffer(context, CL_MEM_READ_WRITE, groupSize * sizeof(float), NULL, &err);
         
         // (d) Calls the OpenCL to fill the distance matrix
         // ------------------------------------------- START DIS ------------------------------------------- //
@@ -117,7 +117,7 @@ double launchKernel(Rcpp::NumericVector data_x, Rcpp::NumericVector data_y, int 
         err |= clSetKernelArg(kernel_kth, 3, sizeof(int), &K);
 
         // (2) Enqueue kernel (2D NDRange) - Runs the kernel program
-        size_t globalWorkSize1[2] = { (size_t)groupSize, (size_t)groupSize };
+        size_t globalWorkSize1[1] = { (size_t)groupSize };
         err = clEnqueueNDRangeKernel(queue, kernel_kth, 1, NULL, globalWorkSize1, NULL, 0, NULL, NULL);
         // Waits for the kernel to finish before executing any more code
         clFinish(queue);
@@ -127,11 +127,11 @@ double launchKernel(Rcpp::NumericVector data_x, Rcpp::NumericVector data_y, int 
         // (f) Read back the N result vector to host in double
         
         // Creates a vector to store the results
-        std::vector<double> resultDbl(groupSize);
+        std::vector<float> resultFloat(groupSize);
         // Reads the results from the OpenCL program
-        err = clEnqueueReadBuffer(queue, resultBuf, CL_TRUE, 0, groupSize * sizeof(double), resultDbl.data(), 0, NULL, NULL);
+        err = clEnqueueReadBuffer(queue, resultBuf, CL_TRUE, 0, groupSize * sizeof(float), resultFloat.data(), 0, NULL, NULL);
         // Converts the results to a NumericVector
-        Rcpp::NumericVector result(resultDbl.begin(), resultDbl.end());
+        Rcpp::NumericVector result(resultFloat.begin(), resultFloat.end());
 
 
         // (h) Average for this group
