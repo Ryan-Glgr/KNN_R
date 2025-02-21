@@ -18,8 +18,9 @@ suppressMessages({
 # -------------------------------------------------------------------
 # 'OpenCL_KNN.cpp' should export a function, e.g., launchKernel(...)
 # 'Faster_kNN_Implementation.cpp' should export IE_xy(...)
+
+# sourceCpp("Faster_kNN_Implementation.cpp")
 sourceCpp("OpenCL_KNN.cpp")
-sourceCpp("Faster_kNN_Implementation.cpp")
 
 # -------------------------------------------------------------------
 # Read data
@@ -32,9 +33,9 @@ MATINTFC <- Data$MATINTFC
 # Define CPU and GPU wrappers
 # -------------------------------------------------------------------
 # CPU approach using IE_xy for a vector of k
-compute_IE_Cpp <- function(x, y, ks) {
-  sapply(ks, function(k) IE_xy(x, y, k))
-}
+# compute_IE_Cpp <- function(x, y, ks) {
+#  sapply(ks, function(k) IE_xy(x, y, k))
+# }
 
 # OpenCL approach using launchKernel for a vector of k
 compute_IE_OpenCL <- function(x, y, ks) {
@@ -52,15 +53,15 @@ y_sub <- MATINTFC[1:N]
 # -------------------------------------------------------------------
 # Timed CPU computation
 # -------------------------------------------------------------------
-cat("\n--- CPU/C++ Version Timing ---\n")
-t_cpu <- system.time({
-  result_cpu <- compute_IE_Cpp(x_sub, y_sub, k_values)
-})
-cat("CPU results:\n")
-print(result_cpu)
-cat("CPU user time:   ", t_cpu["user.self"], " seconds\n")
-cat("CPU system time: ", t_cpu["sys.self"], " seconds\n")
-cat("CPU elapsed time:", t_cpu["elapsed"],   " seconds\n\n")
+# cat("\n--- CPU/C++ Version Timing ---\n")
+# t_cpu <- system.time({
+#  result_cpu <- compute_IE_Cpp(x_sub, y_sub, k_values)
+# })
+# cat("CPU results:\n")
+# print(result_cpu)
+# cat("CPU user time:   ", t_cpu["user.self"], " seconds\n")
+# cat("CPU system time: ", t_cpu["sys.self"], " seconds\n")
+# cat("CPU elapsed time:", t_cpu["elapsed"],   " seconds\n\n")
 
 # -------------------------------------------------------------------
 # Timed GPU (OpenCL) computation
@@ -76,4 +77,3 @@ cat("GPU system time: ", t_gpu["sys.self"], " seconds\n")
 cat("GPU elapsed time:", t_gpu["elapsed"],   " seconds\n\n")
 
 cat("All done.\n")
-

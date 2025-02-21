@@ -12,7 +12,7 @@ __kernel void fillDistanceMatrix(__global const float* xGroup,
 }
 
 __kernel void kth_element(__global float* distanceMatrix,
-                          __global float* result,
+                          __global double* result,
                                  const int groupSize,
                                  const int K)
 {
@@ -25,59 +25,61 @@ __kernel void kth_element(__global float* distanceMatrix,
     // Clamp k to the max group size
     int kClamped = (K > groupSize - 1) ? (groupSize - 1) : K;
     // Adjusts k to the correct position in the array
-    int kAdjusted = kClamped + (i * groupSize);
+    int kAdjusted = kClamped + i * groupSize;
 
     // ------------------------ START QUICKSELECT ------------------------ //
 
-    int lowerBound = i * groupSize;
-    int upperBound = i * groupSize + groupSize - 1;
+    // Gets the first and last indexes of the current group
+    int lowerBound = groupSize * i;
+    int upperBound = groupSize * i + groupSize - 1;
 
-    while (upperBound > lowerBound) {
+    // Iterate until the lowerBound and upperBound are the same
+    while ( lowerBound <= upperBound ) {
+        
+        // --------------- START PARTITION --------------- //
+        
+        int size = upperBound - lowerBound + 1;
+        float pivot = distanceMatrix[upperBound];
 
-        // -------------------- START PARTITION -------------------- //
-        // Creates starting points
-        int left = lowerBound - 1;
-        int right = upperBound + 1;
-    
-        // Sets the pivot to the first element in the array
-  	    int pivot = distanceMatrix[lowerBound];
-
-        // Loops to partition
-  	    while (true) {
-      
-      	    // Find element larger than pivot
-      	    do {
-                left++;
-            } while (distanceMatrix[left] < pivot && left < upperBound);
-
-      	    // Find element smaller than pivot
-            do {
-                right--;
-            } while (distanceMatrix[right] > pivot && right > lowerBound);
-      	
-      	    // If left and right cross, break;
-            if (left >= right) {break;}
-      	
-      	    // Swap if left and right don't cross
-            if (left < right) {
-                float temp = distanceMatrix[left];
-                distanceMatrix[left] = distanceMatrix[right];
-                distanceMatrix[right] = temp;
+        int i = lowerBound - 1;
+        // Partitioning (Lomuto's Algorithm)
+        for (int j = lowerBound; j < upperBound; j++) {
+        
+            // If the current is less than the pivot
+            // Swap i and the current element
+            // And move i up to the next element
+            // (Essentially move an element from the right to the left,
+            // And then move to the element which will be swapped next)
+            if (distanceMatrix[j] < pivot) {
+                i++;
+                float temp = distanceMatrix[i];
+                distanceMatrix[i] = distanceMatrix[j];
+                distanceMatrix[j] = temp;
             }
-        }
-        // -------------------- END PARTITION -------------------- //
 
-        // Adjusts the bounds of the algorithm given
-        // the position relative to the pivot
-        if (kAdjusted == right) {
-            break;
-        } else if (kAdjusted < right) {
-            upperBound = right - 1;
+        }
+
+        // Swap the last non-swapped on the left and the pivot
+        float temp = distanceMatrix[i+1];
+        distanceMatrix[i+1] = distanceMatrix[upperBound];
+        distanceMatrix[upperBound] = temp;
+
+        // ---------------- END PARTITION ---------------- //
+
+        // Get the current pivot index
+        int pivotIndex = i + 1;
+
+        // Change the bounds if the pivot is not equal to k
+        if (pivotIndex == kAdjusted) {
+            break;    
+        } else if (pivotIndex > kAdjusted) {
+            upperBound = pivotIndex - 1;
         } else {
-            lowerBound = right + 1;
+            lowerBound = pivotIndex + 1;
         }
 
     }
+
     // ------------------------- END QUICKSELECT ------------------------- //
 
 

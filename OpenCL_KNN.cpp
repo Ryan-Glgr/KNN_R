@@ -3,6 +3,7 @@
 #include <sstream>
 #include <cstring>
 #include <algorithm>
+#include <ctime>
 #include <CL/cl.h>
 #include <Rcpp.h>
 
@@ -61,6 +62,11 @@ double launchKernel(Rcpp::NumericVector data_x, Rcpp::NumericVector data_y, int 
     double globalAccumulator = 0.0;
     int total_x_size = data_x.size();
 
+    // Calculate time points
+    double dis_timer = 0;
+    double kth_timer = 0;
+    double avg_timer = 0;
+
     // ---------------------------------------------------
     // 5) Iterate Over Each Y-Group
     // ---------------------------------------------------
@@ -85,7 +91,12 @@ double launchKernel(Rcpp::NumericVector data_x, Rcpp::NumericVector data_y, int 
         // These will be used for all openCL calls. They store the memory partitions created to run the OpenCL code.
         cl_mem xGroupBuf = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, groupSize * sizeof(float), hostXGroup.data(), &err);
         cl_mem distanceMatrixBuf = clCreateBuffer(context, CL_MEM_READ_WRITE, groupSize * groupSize * sizeof(float), NULL, &err);
-        cl_mem resultBuf = clCreateBuffer(context, CL_MEM_READ_WRITE, groupSize * sizeof(float), NULL, &err);
+        cl_mem resultBuf = clCreateBuffer(context, CL_MEM_READ_WRITE, groupSize * sizeof(double), NULL, &err);
+
+        
+        // Get starting timepoint
+        std::clock_t dis_start = std::clock();
+
         
         // (d) Calls the OpenCL to fill the distance matrix
         // ------------------------------------------- START DIS ------------------------------------------- //
@@ -105,6 +116,11 @@ double launchKernel(Rcpp::NumericVector data_x, Rcpp::NumericVector data_y, int 
 
         // -------------------------------------------- END DIS -------------------------------------------- //
 
+        // Get ending timepoint
+        std::clock_t dis_end = std::clock();
+        // Get starting timepoint
+        std::clock_t kth_start = std::clock();
+
         // (e) Calls the OpenCL to get the K smallest element
         // ------------------------------------------- START KTH ------------------------------------------- //
 
@@ -117,25 +133,34 @@ double launchKernel(Rcpp::NumericVector data_x, Rcpp::NumericVector data_y, int 
         err |= clSetKernelArg(kernel_kth, 3, sizeof(int), &K);
 
         // (2) Enqueue kernel (2D NDRange) - Runs the kernel program
-        size_t globalWorkSize1[1] = { (size_t)groupSize };
+        size_t globalWorkSize1[2] = { (size_t)groupSize, (size_t)groupSize };
         err = clEnqueueNDRangeKernel(queue, kernel_kth, 1, NULL, globalWorkSize1, NULL, 0, NULL, NULL);
         // Waits for the kernel to finish before executing any more code
         clFinish(queue);
 
         // -------------------------------------------- END KTH -------------------------------------------- //
 
+        // Get ending timepoint
+        std::clock_t kth_end = std::clock();
+
         // (f) Read back the N result vector to host in double
         
         // Creates a vector to store the results
-        std::vector<float> resultFloat(groupSize);
+        std::vector<double> resultDbl(groupSize);
         // Reads the results from the OpenCL program
-        err = clEnqueueReadBuffer(queue, resultBuf, CL_TRUE, 0, groupSize * sizeof(float), resultFloat.data(), 0, NULL, NULL);
+        err = clEnqueueReadBuffer(queue, resultBuf, CL_TRUE, 0, groupSize * sizeof(double), resultDbl.data(), 0, NULL, NULL);
         // Converts the results to a NumericVector
-        Rcpp::NumericVector result(resultFloat.begin(), resultFloat.end());
+        Rcpp::NumericVector result(resultDbl.begin(), resultDbl.end());
 
-
+        
+        // Get starting timepoint
+        std::clock_t avg_start = std::clock();
+        
         // (h) Average for this group
         double IE = Rcpp::mean(result);
+
+        // Get ending timepoint
+        std::clock_t avg_end = std::clock();
 
         // Weighted by group size
         double weight = static_cast<double>(groupSize) / static_cast<double>(total_x_size);
@@ -147,7 +172,18 @@ double launchKernel(Rcpp::NumericVector data_x, Rcpp::NumericVector data_y, int 
         clReleaseMemObject(xGroupBuf);
         clReleaseMemObject(resultBuf);
         clReleaseMemObject(distanceMatrixBuf);
+
+        // Adds time to dis_timer and kth_timer
+        dis_timer += double(dis_end - dis_start) / CLOCKS_PER_SEC;
+        kth_timer += double(kth_end - kth_start) / CLOCKS_PER_SEC;
+        avg_timer += double(avg_end - avg_start) / CLOCKS_PER_SEC;
+
     }
+
+    std::cout << "-- K: " << K << " --" << std::endl;
+    std::cout << "DIS: " << dis_timer << " seconds." << std::endl;
+    std::cout << "KTH: " << kth_timer << " seconds." << std::endl;
+    std::cout << "AVG: " << avg_timer << " seconds." << std::endl;
 
     // ---------------------------------------------------
     // 6) Cleanup & Return
