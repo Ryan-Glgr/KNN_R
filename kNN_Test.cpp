@@ -2,7 +2,7 @@
 #include <vector>
 #include <cmath>
 #include <algorithm>
-#include <omp.h>  // Ensure OpenMP is included
+#include <omp.h>
 #include <thread>
 #include <mutex>
 #include <condition_variable>
@@ -17,16 +17,12 @@ int debug_count = 0;
 
 using namespace Rcpp;
 
-/* Function Signatures */
-// Core functions
+// Function Signatures
 float IE_xy(Rcpp::NumericVector data_x, Rcpp::NumericVector data_y, int k);
 Rcpp::NumericVector kNN(const Rcpp::NumericVector& data, int k);
-
-// Helper Function
 void print_vector(const Rcpp::NumericVector& x);
 
-/* Function Definitions */
-
+// Class for ThreadPool
 class ThreadPool {
     public:
         ThreadPool(int num_threads) : num_threads_(num_threads) {
@@ -84,7 +80,7 @@ class ThreadPool {
     
     
 
-
+// Function Definitions
 /*
   kNN function, which takes a vector of floats and a k value
   returns a vector of the kNN weights for each element of data.
