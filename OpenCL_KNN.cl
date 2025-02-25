@@ -1,5 +1,11 @@
-__kernel void fillDistanceMatrix(__global const float* xGroup,
-                                 __global float* distanceMatrix,
+
+// Define type T, defaults to float
+#ifndef T
+#define T float
+#endif
+
+__kernel void fillDistanceMatrix(__global const T* xGroup,
+                                 __global T* distanceMatrix,
                                  const int groupSize)
 {
     int i = get_global_id(0);
@@ -11,8 +17,8 @@ __kernel void fillDistanceMatrix(__global const float* xGroup,
     }
 }
 
-__kernel void kth_element(__global float* distanceMatrix,
-                          __global double* result,
+__kernel void kth_element(__global T* distanceMatrix,
+                          __global T* result,
                                  const int groupSize,
                                  const int K)
 {
@@ -39,7 +45,7 @@ __kernel void kth_element(__global float* distanceMatrix,
         // --------------- START PARTITION --------------- //
         
         int size = upperBound - lowerBound + 1;
-        float pivot = distanceMatrix[upperBound];
+        T pivot = distanceMatrix[upperBound];
 
         int i = lowerBound - 1;
         // Partitioning (Lomuto's Algorithm)
@@ -52,7 +58,7 @@ __kernel void kth_element(__global float* distanceMatrix,
             // And then move to the element which will be swapped next)
             if (distanceMatrix[j] < pivot) {
                 i++;
-                float temp = distanceMatrix[i];
+                T temp = distanceMatrix[i];
                 distanceMatrix[i] = distanceMatrix[j];
                 distanceMatrix[j] = temp;
             }
@@ -60,7 +66,7 @@ __kernel void kth_element(__global float* distanceMatrix,
         }
 
         // Swap the last non-swapped on the left and the pivot
-        float temp = distanceMatrix[i+1];
+        T temp = distanceMatrix[i+1];
         distanceMatrix[i+1] = distanceMatrix[upperBound];
         distanceMatrix[upperBound] = temp;
 
