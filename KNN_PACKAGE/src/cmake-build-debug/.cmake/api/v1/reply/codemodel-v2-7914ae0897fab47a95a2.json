@@ -6,10 +6,11 @@
 			[
 				{
 					"build" : ".",
-					"jsonFile" : "directory-.-Debug-f5ebdc15457944623624.json",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-.-Debug-def6cf939dd14d9daa9a.json",
 					"minimumCMakeVersion" : 
 					{
-						"string" : "3.20"
+						"string" : "3.30"
 					},
 					"projectIndex" : 0,
 					"source" : ".",
@@ -39,7 +40,7 @@
 				{
 					"directoryIndex" : 0,
 					"id" : "KNN_PACKAGE::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-KNN_PACKAGE-Debug-02d0e4f7b4060260d7dc.json",
+					"jsonFile" : "target-KNN_PACKAGE-Debug-762f03b72654837a310f.json",
 					"name" : "KNN_PACKAGE",
 					"projectIndex" : 0
 				}

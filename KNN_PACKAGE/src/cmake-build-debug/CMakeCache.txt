@@ -229,6 +229,9 @@ CUDA_CUDART_LIBRARY:FILEPATH=CUDA_CUDART_LIBRARY-NOTFOUND
 //"cuda" library (older versions only).
 CUDA_CUDA_LIBRARY:FILEPATH=CUDA_CUDA_LIBRARY-NOTFOUND
 
+//The directory containing a CMake configuration file for CUDA.
+CUDA_DIR:PATH=CUDA_DIR-NOTFOUND
+
 //Directory to put all the output files.  If blank it will default
 // to the CMAKE_CURRENT_BINARY_DIR
 CUDA_GENERATED_OUTPUT_DIR:PATH=

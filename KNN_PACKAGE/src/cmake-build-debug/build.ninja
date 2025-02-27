@@ -53,7 +53,7 @@ build CMakeFiles/KNN_PACKAGE.dir/library.cpp.o: CXX_COMPILER__KNN_PACKAGE_unscan
   DEFINES = -DHAVE_OPENCL -DKNN_PACKAGE_EXPORTS
   DEP_FILE = CMakeFiles/KNN_PACKAGE.dir/library.cpp.o.d
   FLAGS = -g -std=gnu++20 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX15.2.sdk -fPIC -fcolor-diagnostics
-  INCLUDES = -I/Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src -F/Library/Developer/CommandLineTools/SDKs/MacOSX15.2.sdk/System/Library/Frameworks -I/System/Library/Frameworks/OpenCL.framework/Headers
+  INCLUDES = -I/usr/local/Cellar/r/4.4.2_2/lib/R/include -F/Library/Developer/CommandLineTools/SDKs/MacOSX15.2.sdk/System/Library/Frameworks -I/System/Library/Frameworks/OpenCL.framework/Headers
   OBJECT_DIR = CMakeFiles/KNN_PACKAGE.dir
   OBJECT_FILE_DIR = CMakeFiles/KNN_PACKAGE.dir
 
@@ -61,7 +61,7 @@ build CMakeFiles/KNN_PACKAGE.dir/CPP_KNN.cpp.o: CXX_COMPILER__KNN_PACKAGE_unscan
   DEFINES = -DHAVE_OPENCL -DKNN_PACKAGE_EXPORTS
   DEP_FILE = CMakeFiles/KNN_PACKAGE.dir/CPP_KNN.cpp.o.d
   FLAGS = -g -std=gnu++20 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX15.2.sdk -fPIC -fcolor-diagnostics
-  INCLUDES = -I/Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src -F/Library/Developer/CommandLineTools/SDKs/MacOSX15.2.sdk/System/Library/Frameworks -I/System/Library/Frameworks/OpenCL.framework/Headers
+  INCLUDES = -I/usr/local/Cellar/r/4.4.2_2/lib/R/include -F/Library/Developer/CommandLineTools/SDKs/MacOSX15.2.sdk/System/Library/Frameworks -I/System/Library/Frameworks/OpenCL.framework/Headers
   OBJECT_DIR = CMakeFiles/KNN_PACKAGE.dir
   OBJECT_FILE_DIR = CMakeFiles/KNN_PACKAGE.dir
 
@@ -69,7 +69,7 @@ build CMakeFiles/KNN_PACKAGE.dir/openCL_KNN.cpp.o: CXX_COMPILER__KNN_PACKAGE_uns
   DEFINES = -DHAVE_OPENCL -DKNN_PACKAGE_EXPORTS
   DEP_FILE = CMakeFiles/KNN_PACKAGE.dir/openCL_KNN.cpp.o.d
   FLAGS = -g -std=gnu++20 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX15.2.sdk -fPIC -fcolor-diagnostics
-  INCLUDES = -I/Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src -F/Library/Developer/CommandLineTools/SDKs/MacOSX15.2.sdk/System/Library/Frameworks -I/System/Library/Frameworks/OpenCL.framework/Headers
+  INCLUDES = -I/usr/local/Cellar/r/4.4.2_2/lib/R/include -F/Library/Developer/CommandLineTools/SDKs/MacOSX15.2.sdk/System/Library/Frameworks -I/System/Library/Frameworks/OpenCL.framework/Headers
   OBJECT_DIR = CMakeFiles/KNN_PACKAGE.dir
   OBJECT_FILE_DIR = CMakeFiles/KNN_PACKAGE.dir
 
@@ -79,20 +79,20 @@ build CMakeFiles/KNN_PACKAGE.dir/openCL_KNN.cpp.o: CXX_COMPILER__KNN_PACKAGE_uns
 
 
 #############################################
-# Link the shared library libKNN_PACKAGE.dylib
+# Link the shared library /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/libs/CWUKNN.so
 
-build libKNN_PACKAGE.dylib: CXX_SHARED_LIBRARY_LINKER__KNN_PACKAGE_Debug CMakeFiles/KNN_PACKAGE.dir/library.cpp.o CMakeFiles/KNN_PACKAGE.dir/CPP_KNN.cpp.o CMakeFiles/KNN_PACKAGE.dir/openCL_KNN.cpp.o
+build /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/libs/CWUKNN.so: CXX_SHARED_LIBRARY_LINKER__KNN_PACKAGE_Debug CMakeFiles/KNN_PACKAGE.dir/library.cpp.o CMakeFiles/KNN_PACKAGE.dir/CPP_KNN.cpp.o CMakeFiles/KNN_PACKAGE.dir/openCL_KNN.cpp.o
   ARCH_FLAGS = -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX15.2.sdk
   INSTALLNAME_DIR = @rpath/
   LANGUAGE_COMPILE_FLAGS = -g
-  LINK_LIBRARIES = -framework OpenCL
+  LINK_LIBRARIES = -L/usr/local/opt/gettext/lib  -L/usr/local/opt/readline/lib  -L/usr/local/opt/xz/lib  -L/usr/local/lib  -L/usr/local/opt/gettext/lib  -L/usr/local/opt/readline/lib  -L/usr/local/opt/xz/lib  -L/usr/local/lib  -L/usr/local/Cellar/r/4.4.2_2/lib/R/lib  -lR  -L/usr/local/Cellar/pcre2/10.44/lib  -L/usr/local/opt/gcc/lib/gcc/current/gcc/x86_64-apple-darwin23/14  -L/usr/local/opt/gcc/lib/gcc/current/gcc  -L/usr/local/opt/gcc/lib/gcc/current  -lpcre2-8  -llzma  -lbz2  -lz  -licucore  -lgfortran  -lquadmath  -ldl  -lm  -liconv  -framework OpenCL
   OBJECT_DIR = CMakeFiles/KNN_PACKAGE.dir
   POST_BUILD = :
   PRE_LINK = :
-  SONAME = libKNN_PACKAGE.dylib
+  SONAME = CWUKNN.so
   SONAME_FLAG = -install_name
-  TARGET_FILE = libKNN_PACKAGE.dylib
-  TARGET_PDB = KNN_PACKAGE.dylib.dbg
+  TARGET_FILE = /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/libs/CWUKNN.so
+  TARGET_PDB = CWUKNN.so.dbg
 
 
 #############################################
@@ -117,10 +117,54 @@ build CMakeFiles/rebuild_cache.util: CUSTOM_COMMAND
 
 build rebuild_cache: phony CMakeFiles/rebuild_cache.util
 
+
+#############################################
+# Utility command for list_install_components
+
+build list_install_components: phony
+
+
+#############################################
+# Utility command for install
+
+build CMakeFiles/install.util: CUSTOM_COMMAND all
+  COMMAND = cd /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/cmake-build-debug && /Applications/CLion.app/Contents/bin/cmake/mac/x64/bin/cmake -P cmake_install.cmake
+  DESC = Install the project...
+  pool = console
+  restat = 1
+
+build install: phony CMakeFiles/install.util
+
+
+#############################################
+# Utility command for install/local
+
+build CMakeFiles/install/local.util: CUSTOM_COMMAND all
+  COMMAND = cd /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/cmake-build-debug && /Applications/CLion.app/Contents/bin/cmake/mac/x64/bin/cmake -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake
+  DESC = Installing only the local directory...
+  pool = console
+  restat = 1
+
+build install/local: phony CMakeFiles/install/local.util
+
+
+#############################################
+# Utility command for install/strip
+
+build CMakeFiles/install/strip.util: CUSTOM_COMMAND all
+  COMMAND = cd /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/cmake-build-debug && /Applications/CLion.app/Contents/bin/cmake/mac/x64/bin/cmake -DCMAKE_INSTALL_DO_STRIP=1 -P cmake_install.cmake
+  DESC = Installing the project stripped...
+  pool = console
+  restat = 1
+
+build install/strip: phony CMakeFiles/install/strip.util
+
 # =============================================================================
 # Target aliases.
 
-build KNN_PACKAGE: phony libKNN_PACKAGE.dylib
+build CWUKNN.so: phony /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/libs/CWUKNN.so
+
+build KNN_PACKAGE: phony /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/libs/CWUKNN.so
 
 # =============================================================================
 # Folder targets.
@@ -130,7 +174,7 @@ build KNN_PACKAGE: phony libKNN_PACKAGE.dylib
 #############################################
 # Folder: /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/cmake-build-debug
 
-build all: phony libKNN_PACKAGE.dylib
+build all: phony /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/libs/CWUKNN.so
 
 # =============================================================================
 # Built-in targets
@@ -139,14 +183,14 @@ build all: phony libKNN_PACKAGE.dylib
 #############################################
 # Re-run CMake if any of its inputs changed.
 
-build build.ninja: RERUN_CMAKE | /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/CMakeCXXInformation.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/CMakeCommonLanguageInclude.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/CMakeGenericSystem.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/CMakeInitializeConfigs.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/CMakeLanguageInformation.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/CMakeParseImplicitLinkInfo.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/CMakePushCheckState.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/CMakeSystemSpecificInformation.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/CMakeSystemSpecificInitialize.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/CheckSymbolExists.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/Compiler/AppleClang-CXX.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/Compiler/CMakeCommonCompilerMacros.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/Compiler/Clang.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/Compiler/GNU.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/FindCUDA.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/FindCUDA/select_compute_arch.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/FindOpenCL.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/FindOpenMP.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/FindPackageHandleStandardArgs.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/FindPackageMessage.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/Platform/Apple-AppleClang-CXX.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/Platform/Apple-Clang-CXX.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/Platform/Apple-Clang.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/Platform/Darwin-Initialize.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/Platform/Darwin.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/Platform/UnixPaths.cmake /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/CMakeLists.txt CMakeCache.txt CMakeFiles/3.30.5/CMakeCXXCompiler.cmake CMakeFiles/3.30.5/CMakeSystem.cmake
+build build.ninja: RERUN_CMAKE | /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/CMakeCXXInformation.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/CMakeCommonLanguageInclude.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/CMakeGenericSystem.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/CMakeInitializeConfigs.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/CMakeLanguageInformation.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/CMakeParseImplicitLinkInfo.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/CMakePushCheckState.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/CMakeSystemSpecificInformation.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/CMakeSystemSpecificInitialize.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/CheckSymbolExists.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/Compiler/AppleClang-CXX.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/Compiler/CMakeCommonCompilerMacros.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/Compiler/Clang.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/Compiler/GNU.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/FindOpenCL.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/FindOpenMP.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/FindPackageHandleStandardArgs.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/FindPackageMessage.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/Platform/Apple-AppleClang-CXX.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/Platform/Apple-Clang-CXX.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/Platform/Apple-Clang.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/Platform/Darwin-Initialize.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/Platform/Darwin.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/Platform/UnixPaths.cmake /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/CMakeLists.txt CMakeCache.txt CMakeFiles/3.30.5/CMakeCXXCompiler.cmake CMakeFiles/3.30.5/CMakeSystem.cmake
   pool = console
 
 
 #############################################
 # A missing CMake input file is not an error.
 
-build /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/CMakeCXXInformation.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/CMakeCommonLanguageInclude.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/CMakeGenericSystem.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/CMakeInitializeConfigs.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/CMakeLanguageInformation.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/CMakeParseImplicitLinkInfo.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/CMakePushCheckState.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/CMakeSystemSpecificInformation.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/CMakeSystemSpecificInitialize.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/CheckSymbolExists.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/Compiler/AppleClang-CXX.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/Compiler/CMakeCommonCompilerMacros.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/Compiler/Clang.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/Compiler/GNU.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/FindCUDA.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/FindCUDA/select_compute_arch.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/FindOpenCL.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/FindOpenMP.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/FindPackageHandleStandardArgs.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/FindPackageMessage.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/Platform/Apple-AppleClang-CXX.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/Platform/Apple-Clang-CXX.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/Platform/Apple-Clang.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/Platform/Darwin-Initialize.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/Platform/Darwin.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/Platform/UnixPaths.cmake /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/CMakeLists.txt CMakeCache.txt CMakeFiles/3.30.5/CMakeCXXCompiler.cmake CMakeFiles/3.30.5/CMakeSystem.cmake: phony
+build /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/CMakeCXXInformation.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/CMakeCommonLanguageInclude.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/CMakeGenericSystem.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/CMakeInitializeConfigs.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/CMakeLanguageInformation.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/CMakeParseImplicitLinkInfo.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/CMakePushCheckState.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/CMakeSystemSpecificInformation.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/CMakeSystemSpecificInitialize.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/CheckSymbolExists.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/Compiler/AppleClang-CXX.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/Compiler/CMakeCommonCompilerMacros.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/Compiler/Clang.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/Compiler/GNU.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/FindOpenCL.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/FindOpenMP.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/FindPackageHandleStandardArgs.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/FindPackageMessage.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/Platform/Apple-AppleClang-CXX.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/Platform/Apple-Clang-CXX.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/Platform/Apple-Clang.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/Platform/Darwin-Initialize.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/Platform/Darwin.cmake /Applications/CLion.app/Contents/bin/cmake/mac/x64/share/cmake-3.30/Modules/Platform/UnixPaths.cmake /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/CMakeLists.txt CMakeCache.txt CMakeFiles/3.30.5/CMakeCXXCompiler.cmake CMakeFiles/3.30.5/CMakeSystem.cmake: phony
 
 
 #############################################

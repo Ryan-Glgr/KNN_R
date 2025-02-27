@@ -1,18 +1,29 @@
 /Applications/CLion.app/Contents/bin/cmake/mac/x64/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/Applications/CLion.app/Contents/bin/ninja/mac/x64/ninja -G Ninja -S /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src -B /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/cmake-build-debug
-CMake Warning (dev) at CMakeLists.txt:14 (find_package):
-  Policy CMP0146 is not set: The FindCUDA module is removed.  Run "cmake
-  --help-policy CMP0146" for policy details.  Use the cmake_policy command to
-  set the policy and suppress this warning.
+CMake Warning at CMakeLists.txt:16 (find_package):
+  By not providing "FindCUDA.cmake" in CMAKE_MODULE_PATH this project has
+  asked CMake to find a package configuration file provided by "CUDA", but
+  CMake did not find one.
 
-This warning is for project developers.  Use -Wno-dev to suppress it.
+  Could not find a package configuration file provided by "CUDA" with any of
+  the following names:
 
-CUDA_TOOLKIT_ROOT_DIR not found or specified
--- Could NOT find CUDA (missing: CUDA_TOOLKIT_ROOT_DIR CUDA_NVCC_EXECUTABLE CUDA_INCLUDE_DIRS CUDA_CUDART_LIBRARY) 
--- CUDA not found; excluding CUDA implementation.
--- OpenCL found; including OpenCL implementation.
+    CUDAConfig.cmake
+    cuda-config.cmake
+
+  Add the installation prefix of "CUDA" to CMAKE_PREFIX_PATH or set
+  "CUDA_DIR" to a directory containing one of the above files.  If "CUDA"
+  provides a separate development package or SDK, be sure it has been
+  installed.
+
+
+-- CUDA not found: skipping CUDA implementation.
+-- OpenCL found: including OpenCL implementation.
 -- Could NOT find OpenMP_CXX (missing: OpenMP_CXX_FLAGS OpenMP_CXX_LIB_NAMES) 
 -- Could NOT find OpenMP (missing: OpenMP_CXX_FOUND) 
--- OpenMP not found; proceeding without OpenMP parallelization.
+-- OpenMP not found: proceeding without OpenMP.
+-- Using R include directory: /usr/local/Cellar/r/4.4.2_2/lib/R/include
+-- Original R ldflags: -L/usr/local/opt/gettext/lib -L/usr/local/opt/readline/lib -L/usr/local/opt/xz/lib -L/usr/local/lib -L/usr/local/opt/gettext/lib -L/usr/local/opt/readline/lib -L/usr/local/opt/xz/lib -L/usr/local/lib -L/usr/local/Cellar/r/4.4.2_2/lib/R/lib -lR -L/usr/local/Cellar/pcre2/10.44/lib -L/usr/local/opt/gcc/lib/gcc/current/gcc/x86_64-apple-darwin23/14 -L/usr/local/opt/gcc/lib/gcc/current/gcc -L/usr/local/opt/gcc/lib/gcc/current -lpcre2-8 -llzma -lbz2 -lz -licucore -lemutls_w -lheapt_w -lgfortran -lquadmath -ldl -lm -liconv
+-- Modified R ldflags: -L/usr/local/opt/gettext/lib -L/usr/local/opt/readline/lib -L/usr/local/opt/xz/lib -L/usr/local/lib -L/usr/local/opt/gettext/lib -L/usr/local/opt/readline/lib -L/usr/local/opt/xz/lib -L/usr/local/lib -L/usr/local/Cellar/r/4.4.2_2/lib/R/lib -lR -L/usr/local/Cellar/pcre2/10.44/lib -L/usr/local/opt/gcc/lib/gcc/current/gcc/x86_64-apple-darwin23/14 -L/usr/local/opt/gcc/lib/gcc/current/gcc -L/usr/local/opt/gcc/lib/gcc/current -lpcre2-8 -llzma -lbz2 -lz -licucore   -lgfortran -lquadmath -ldl -lm -liconv
 -- Configuring done (1.2s)
 -- Generating done (0.0s)
 -- Build files have been written to: /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/cmake-build-debug

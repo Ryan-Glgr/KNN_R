@@ -2655,3 +2655,81 @@ events:
         
       exitCode: 2
 ...
+
+---
+events:
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/usr/local/share/cmake/Modules/FindOpenMP.cmake:252 (try_compile)"
+      - "/usr/local/share/cmake/Modules/FindOpenMP.cmake:522 (_OPENMP_GET_FLAGS)"
+      - "CMakeLists.txt:49 (find_package)"
+    description: "Detecting CXX OpenMP compiler info"
+    directories:
+      source: "/Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/build/CMakeFiles/CMakeScratch/TryCompile-wS2Kc0"
+      binary: "/Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/build/CMakeFiles/CMakeScratch/TryCompile-wS2Kc0"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: "-g -O2"
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: "-L/usr/local/opt/gettext/lib -L/usr/local/opt/readline/lib -L/usr/local/opt/xz/lib -L/usr/local/lib"
+      CMAKE_OSX_ARCHITECTURES: ""
+      CMAKE_OSX_DEPLOYMENT_TARGET: ""
+      CMAKE_OSX_SYSROOT: "/Library/Developer/CommandLineTools/SDKs/MacOSX15.2.sdk"
+    buildResult:
+      variable: "OpenMP_COMPILE_RESULT_CXX_Xclang fopenmp"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/build/CMakeFiles/CMakeScratch/TryCompile-wS2Kc0'
+        
+        Run Build Command(s): /usr/local/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_aecba/fast
+        make  -f CMakeFiles/cmTC_aecba.dir/build.make CMakeFiles/cmTC_aecba.dir/build
+        Building CXX object CMakeFiles/cmTC_aecba.dir/OpenMPTryFlag.cpp.o
+        /Library/Developer/CommandLineTools/usr/bin/clang++  -std=gnu++17   -g -O2 -Xclang -fopenmp -std=gnu++20 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX15.2.sdk -MD -MT CMakeFiles/cmTC_aecba.dir/OpenMPTryFlag.cpp.o -MF CMakeFiles/cmTC_aecba.dir/OpenMPTryFlag.cpp.o.d -o CMakeFiles/cmTC_aecba.dir/OpenMPTryFlag.cpp.o -c /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/build/CMakeFiles/CMakeScratch/TryCompile-wS2Kc0/OpenMPTryFlag.cpp
+        /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/build/CMakeFiles/CMakeScratch/TryCompile-wS2Kc0/OpenMPTryFlag.cpp:2:10: fatal error: 'omp.h' file not found
+            2 | #include <omp.h>
+              |          ^~~~~~~
+        1 error generated.
+        make[1]: *** [CMakeFiles/cmTC_aecba.dir/OpenMPTryFlag.cpp.o] Error 1
+        make: *** [cmTC_aecba/fast] Error 2
+        
+      exitCode: 2
+...
+
+---
+events:
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/usr/local/share/cmake/Modules/FindOpenMP.cmake:252 (try_compile)"
+      - "/usr/local/share/cmake/Modules/FindOpenMP.cmake:522 (_OPENMP_GET_FLAGS)"
+      - "CMakeLists.txt:49 (find_package)"
+    description: "Detecting CXX OpenMP compiler info"
+    directories:
+      source: "/Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/build/CMakeFiles/CMakeScratch/TryCompile-sb5Zve"
+      binary: "/Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/build/CMakeFiles/CMakeScratch/TryCompile-sb5Zve"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: "-g -O2"
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: "-L/usr/local/opt/gettext/lib -L/usr/local/opt/readline/lib -L/usr/local/opt/xz/lib -L/usr/local/lib"
+      CMAKE_OSX_ARCHITECTURES: ""
+      CMAKE_OSX_DEPLOYMENT_TARGET: ""
+      CMAKE_OSX_SYSROOT: "/Library/Developer/CommandLineTools/SDKs/MacOSX15.2.sdk"
+    buildResult:
+      variable: "OpenMP_COMPILE_RESULT_CXX_Xclang fopenmp"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/build/CMakeFiles/CMakeScratch/TryCompile-sb5Zve'
+        
+        Run Build Command(s): /usr/local/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_cd81a/fast
+        make  -f CMakeFiles/cmTC_cd81a.dir/build.make CMakeFiles/cmTC_cd81a.dir/build
+        Building CXX object CMakeFiles/cmTC_cd81a.dir/OpenMPTryFlag.cpp.o
+        /Library/Developer/CommandLineTools/usr/bin/clang++  -std=gnu++17   -g -O2 -Xclang -fopenmp -std=gnu++20 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX15.2.sdk -MD -MT CMakeFiles/cmTC_cd81a.dir/OpenMPTryFlag.cpp.o -MF CMakeFiles/cmTC_cd81a.dir/OpenMPTryFlag.cpp.o.d -o CMakeFiles/cmTC_cd81a.dir/OpenMPTryFlag.cpp.o -c /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/build/CMakeFiles/CMakeScratch/TryCompile-sb5Zve/OpenMPTryFlag.cpp
+        /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/build/CMakeFiles/CMakeScratch/TryCompile-sb5Zve/OpenMPTryFlag.cpp:2:10: fatal error: 'omp.h' file not found
+            2 | #include <omp.h>
+              |          ^~~~~~~
+        1 error generated.
+        make[1]: *** [CMakeFiles/cmTC_cd81a.dir/OpenMPTryFlag.cpp.o] Error 1
+        make: *** [cmTC_cd81a/fast] Error 2
+        
+      exitCode: 2
+...
