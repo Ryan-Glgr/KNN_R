@@ -32,42 +32,58 @@ void print_vector(const Rcpp::NumericVector& x);
   returns a vector of the kNN weights for each element of data.
   Uses std::nth_element for more efficient finding of the k-th smallest distance.
 */
-std::vector<double> kNN(const std::vector<double>& data, int k) {
-
-    // Set the value of k to N-1 in the case where k > N-1
+void computeKNN(const std::vector<double>& data, int k, std::vector<double>& results, int start, int end) {
     int N = data.size();
-    if (k > N - 1) k = N - 1;
-
-    // Blank density vector and storage for distances
-    std::vector<double> result(N);
-    std::vector<double> dist(N);  
-
-    // Loop over data points
-    for (int i = 0; i < N; i++) {
+    
+    for (int i = start; i < end; i++) {
+        std::vector<double> dist(N);
         double x_i = data[i];
 
-        // Compute absolute distances in parallel
+        // Compute distances
         for (int j = 0; j < N; j++) {
             dist[j] = std::abs(x_i - data[j]);
         }
 
-        // Find the k-th smallest distance (nth_element)
+        // Find k-th smallest distance
         std::nth_element(dist.begin(), dist.begin() + k, dist.end());
         double Ri = dist[k];
 
         // Compute density approximation
-        result[i] = k / (N * 2 * Ri);
+        results[i] = k / (N * 2 * Ri);
+    }
+}
+
+// Main kNN function (multi-threaded)
+std::vector<double> kNN(const std::vector<double>& data, int k) {
+    int N = data.size();
+    if (k > N - 1) k = N - 1;
+
+    std::vector<double> results(N, 0.0);
+    int num_threads = std::thread::hardware_concurrency();
+    int chunk_size = (N + num_threads - 1) / num_threads;
+
+    std::vector<std::thread> threads;
+
+    // Launch worker threads
+    for (int t = 0; t < num_threads; t++) {
+        int start = t * chunk_size;
+        int end = std::min(start + chunk_size, N);
+
+        if (start < end) {
+            threads.emplace_back(computeKNN, std::ref(data), k, std::ref(results), start, end);
+        }
     }
 
+    // Join all threads
+    for (auto& t : threads) {
+        if (t.joinable()) {
+            t.join();
+        }
+    }
 
-
-
-#if DEBUG
-    Rprintf("kNN result:       ");
-    print_vector(result);
-#endif
-    return result;
+    return results;
 }
+
 
 
 
