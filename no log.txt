@@ -1,0 +1,295 @@
+[1mdiff --git a/OpenCL_KNN.cl b/OpenCL_KNN.cl[m
+[1mindex 50f89f1..113715d 100644[m
+[1m--- a/OpenCL_KNN.cl[m
+[1m+++ b/OpenCL_KNN.cl[m
+[36m@@ -7,5 +7,88 @@[m [m__kernel void fillDistanceMatrix(__global const float* xGroup,[m
+ [m
+     if (i < groupSize && j < groupSize) {[m
+         distanceMatrix[i * groupSize + j] = fabs(xGroup[i] - xGroup[j]);[m
+[32m+[m[41m        [m
+     }[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m__kernel void kth_element(__global float* distanceMatrix,[m
+[32m+[m[32m                          __global double* result,[m
+[32m+[m[32m                                 const int groupSize,[m
+[32m+[m[32m                                 const int K)[m
+[32m+[m[32m{[m
+[32m+[m
+[32m+[m[32m    // Since distanceMatrix is 1D memory in OpenCL, i and groupSize determines the row starting position[m
+[32m+[m
+[32m+[m[32m    // Get the current thread number (iteration in the "loop")[m
+[32m+[m[32m    int i = get_global_id(0);[m
+[32m+[m
+[32m+[m[32m    // Clamp k to the max group size[m
+[32m+[m[32m    int kClamped = (K > groupSize - 1) ? (groupSize - 1) : K;[m
+[32m+[m[32m    // Adjusts k to the correct position in the array[m
+[32m+[m[32m    int kAdjusted = kClamped + i * groupSize;[m
+[32m+[m
+[32m+[m[32m    // ------------------------ START QUICKSELECT ------------------------ //[m
+[32m+[m
+[32m+[m[32m    // Create starting points[m
+[32m+[m[32m    int pivot = i * groupSize;[m
+[32m+[m[32m    int lowerBound = pivot;[m
+[32m+[m[32m    int upperBound = pivot + groupSize - 1;[m
+[32m+[m
+[32m+[m[32m    // Partition Counters[m
+[32m+[m[32m    int left;[m
+[32m+[m[32m    int right;[m
+[32m+[m
+[32m+[m[32m    // Iterate until pivot is equal to kClamped[m
+[32m+[m[32m    while ( lowerBound < upperBound ) {[m
+[32m+[m
+[32m+[m[32m        // Partitioning (Hoare's Algorithm)[m
+[32m+[m[32m        pivot = lowerBound;[m
+[32m+[m[32m        left = lowerBound - 1;[m
+[32m+[m[32m        right = upperBound + 1;[m
+[32m+[m
+[32m+[m[32m        // Partition the numbers[m
+[32m+[m[32m        while (left < right) {[m
+[32m+[m[41m            [m
+[32m+[m[32m            // Increment on the left until left >= pivot[m
+[32m+[m[32m            do {[m
+[32m+[m[32m                left++;[m
+[32m+[m[32m            } while (distanceMatrix[left] < distanceMatrix[pivot]);[m
+[32m+[m
+[32m+[m[32m            // Increment on the right until right <= pivot[m
+[32m+[m[32m            do {[m
+[32m+[m[32m                right--;[m
+[32m+[m[32m            } while (distanceMatrix[right] > distanceMatrix[pivot]);[m
+[32m+[m[41m            [m
+[32m+[m[32m            // Swap if left < right[m
+[32m+[m[32m            if (left < right) {[m
+[32m+[m[32m                float temp = distanceMatrix[left];[m
+[32m+[m[32m                distanceMatrix[left] = distanceMatrix[right];[m
+[32m+[m[32m                distanceMatrix[right] = temp;[m
+[32m+[m[32m            }[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        // Sets the new pivot to the right element[m
+[32m+[m[32m        pivot = right;[m
+[32m+[m
+[32m+[m[32m        // If the pivot is less than k, re-adjust to the upper-bound[m
+[32m+[m[32m        if (pivot < kAdjusted) {[m
+[32m+[m[32m            lowerBound = pivot+1;[m
+[32m+[m[32m        // If the pivot is less than k, re-adjust to the lower-bound[m
+[32m+[m[32m        } else if (pivot > kAdjusted) {[m
+[32m+[m[32m            upperBound = pivot;[m
+[32m+[m[32m        // If the pivot is the k, break the loop[m
+[32m+[m[32m        } else if (pivot == kAdjusted) {[m
+[32m+[m[32m            break;[m
+[32m+[m[32m        }[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    // ------------------------- END QUICKSELECT ------------------------- //[m
+[32m+[m
+[32m+[m
+[32m+[m[32m    // After QuickSelect, store the found element in Ri[m
+[32m+[m[32m    // Calculate row element[m
+[32m+[m[32m    float Ri = distanceMatrix[kAdjusted];[m
+[32m+[m[32m    // Calculate the result to be read back to the program[m
+[32m+[m[32m    result[i] = kClamped / (groupSize * 2.0f * Ri);[m
+[32m+[m
+ }[m
+\ No newline at end of file[m
+[1mdiff --git a/OpenCL_KNN.cpp b/OpenCL_KNN.cpp[m
+[1mindex 5097057..9f581ff 100644[m
+[1m--- a/OpenCL_KNN.cpp[m
+[1m+++ b/OpenCL_KNN.cpp[m
+[36m@@ -3,7 +3,7 @@[m
+ #include <sstream>[m
+ #include <cstring>[m
+ #include <algorithm>[m
+[31m-#include <OpenCL/cl.h>[m
+[32m+[m[32m#include <CL/cl.h>[m
+ #include <Rcpp.h>[m
+ [m
+ // [[Rcpp::export]][m
+[36m@@ -23,29 +23,40 @@[m [mdouble launchKernel(Rcpp::NumericVector data_x, Rcpp::NumericVector data_y, int[m
+     cl_command_queue queue = clCreateCommandQueue(context, device, 0, &err);[m
+ [m
+     //----------------------------------------------------[m
+[31m-    // 3) Build Program & Create fillDistanceMatrix Kernel[m
+[32m+[m[32m    // 3) Build Programs and Create Kernels: These will be used to run the OpenCL code.[m
+[32m+[m[32m    //    This is where the file references are made for OpenCL calls.[m
+     //----------------------------------------------------[m
+[32m+[m
+[32m+[m[32m    // Creates a file input stream called kernelFile which takes in the OpenCL code[m
+     std::ifstream kernelFile("OpenCL_KNN.cl");[m
+[32m+[m[32m    // Error value if there is failure opening the kernel[m
+     if (!kernelFile.is_open()) {[m
+[31m-        Rcpp::Rcerr << "Failed to open kernel file!" << std::endl;[m
+[32m+[m[32m        Rcpp::Rcerr << "Failed to open kernel file \"OpenCL_KNN.cl\"!" << std::endl;[m
+         return -1.0;[m
+     }[m
+[32m+[m
+[32m+[m[32m    // Reads the kernel file into a string stream[m
+     std::stringstream kernelStream;[m
+     kernelStream << kernelFile.rdbuf();[m
+[32m+[m
+[32m+[m[32m    // Stores the source code from the file into a c string[m
+     std::string kernelSourceStr = kernelStream.str();[m
+     const char* kernelSource = kernelSourceStr.c_str();[m
+ [m
+[32m+[m[32m    // Creates and builds the OpenCL program using the read-in source[m
+     size_t sourceSize = std::strlen(kernelSource);[m
+     cl_program program = clCreateProgramWithSource(context, 1, &kernelSource, &sourceSize, &err);[m
+     err = clBuildProgram(program, 1, &device, NULL, NULL, NULL);[m
+ [m
+[31m-    cl_kernel kernel = clCreateKernel(program, "fillDistanceMatrix", &err);[m
+[32m+[m[32m    // Creates kernels for each function in the OpenCL file[m
+[32m+[m[32m    cl_kernel kernel_dis = clCreateKernel(program, "fillDistanceMatrix", &err);[m
+[32m+[m[32m    cl_kernel kernel_kth = clCreateKernel(program, "kth_element", &err);[m
+ [m
+     //----------------------------------------------------[m
+     // 4) Unique Groups & Data Setup[m
+     //----------------------------------------------------[m
+     Rcpp::NumericVector yVals = Rcpp::unique(data_y);[m
+[31m-    int numGroups = yVals.size();[m
+[32m+[m[32m    int numGroups = yVals.size(); // Stores the unique number of y values in the dataset[m
+ [m
+     double globalAccumulator = 0.0;[m
+     int total_x_size = data_x.size();[m
+[36m@@ -56,67 +67,72 @@[m [mdouble launchKernel(Rcpp::NumericVector data_x, Rcpp::NumericVector data_y, int[m
+     for (int g = 0; g < numGroups; g++) {[m
+         // (a) Extract subset of x for yVals[g][m
+         Rcpp::NumericVector subset_x = data_x[data_y == yVals[g]];[m
+[31m-        int groupSize = subset_x.size();[m
+[32m+[m[32m        int groupSize = subset_x.size(); // GroupSize is the size of x that fits within the set of unique ys[m
+         if (groupSize == 0) {[m
+             continue; // skip empty group[m
+         }[m
+ [m
+         // (b) Copy subset to a float host array[m
+         std::vector<float> hostXGroup(groupSize);[m
+[32m+[m
+[32m+[m[32m        //[m
+         for (int i = 0; i < groupSize; i++) {[m
+             // cast from double (Rcpp) to float[m
+             hostXGroup[i] = static_cast<float>(subset_x[i]);[m
+         }[m
+[31m-[m
+[32m+[m[41m        [m
+         // (c) Create device buffers for xGroup & distanceMatrix (float)[m
+[31m-        cl_mem xGroupBuf = clCreateBuffer(context,[m
+[31m-                                          CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,[m
+[31m-                                          groupSize * sizeof(float),[m
+[31m-                                          hostXGroup.data(),[m
+[31m-                                          &err);[m
+[31m-[m
+[31m-        cl_mem distanceMatrixBuf = clCreateBuffer(context,[m
+[31m-                                                 CL_MEM_READ_WRITE,[m
+[31m-                                                 groupSize * groupSize * sizeof(float),[m
+[31m-                                                 NULL,[m
+[31m-                                                 &err);[m
+[31m-[m
+[31m-        // (d) Set kernel args[m
+[31m-        err  = clSetKernelArg(kernel, 0, sizeof(cl_mem), &xGroupBuf);[m
+[31m-        err |= clSetKernelArg(kernel, 1, sizeof(cl_mem), &distanceMatrixBuf);[m
+[31m-        err |= clSetKernelArg(kernel, 2, sizeof(int), &groupSize);[m
+[31m-[m
+[31m-        // (e) Enqueue kernel (2D NDRange)[m
+[31m-        size_t globalWorkSize[2] = { (size_t)groupSize, (size_t)groupSize };[m
+[31m-        err = clEnqueueNDRangeKernel(queue, kernel, 2, NULL, globalWorkSize,[m
+[31m-                                     NULL, 0, NULL, NULL);[m
+[32m+[m[32m        // These will be used for all openCL calls. They store the memory partitions created to run the OpenCL code.[m
+[32m+[m[32m        cl_mem xGroupBuf = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, groupSize * sizeof(float), hostXGroup.data(), &err);[m
+[32m+[m[32m        cl_mem distanceMatrixBuf = clCreateBuffer(context, CL_MEM_READ_WRITE, groupSize * groupSize * sizeof(float), NULL, &err);[m
+[32m+[m[32m        cl_mem resultBuf = clCreateBuffer(context, CL_MEM_READ_WRITE, groupSize * sizeof(double), NULL, &err);[m
+[32m+[m[41m        [m
+[32m+[m[32m        // (d) Calls the OpenCL to fill the distance matrix[m
+[32m+[m[32m        // ------------------------------------------- START DIS ------------------------------------------- //[m
+[32m+[m
+[32m+[m[32m        // OpenCL_KNN.cl fillDistanceMatrix Call, creates xGroup as input and distanceMatrix as ouput[m
+[32m+[m
+[32m+[m[32m        // (1) Set kernel args[m
+[32m+[m[32m        err  = clSetKernelArg(kernel_dis, 0, sizeof(cl_mem), &xGroupBuf);[m
+[32m+[m[32m        err |= clSetKernelArg(kernel_dis, 1, sizeof(cl_mem), &distanceMatrixBuf);[m
+[32m+[m[32m        err |= clSetKernelArg(kernel_dis, 2, sizeof(int), &groupSize);[m
+[32m+[m
+[32m+[m[32m        // (2) Enqueue kernel (2D NDRange) - Runs the kernel program[m
+[32m+[m[32m        size_t globalWorkSize0[2] = { (size_t)groupSize, (size_t)groupSize };[m
+[32m+[m[32m        err = clEnqueueNDRangeKernel(queue, kernel_dis, 2, NULL, globalWorkSize0, NULL, 0, NULL, NULL);[m
+[32m+[m[32m        // Waits for the kernel to finish before executing any more code[m
+         clFinish(queue);[m
+ [m
+[31m-        // (f) Read back the NxN distance matrix to host in float[m
+[31m-        std::vector<float> hostDistanceMatrix(groupSize * groupSize);[m
+[31m-        err = clEnqueueReadBuffer(queue,[m
+[31m-                                  distanceMatrixBuf,[m
+[31m-                                  CL_TRUE,[m
+[31m-                                  0,[m
+[31m-                                  groupSize * groupSize * sizeof(float),[m
+[31m-                                  hostDistanceMatrix.data(),[m
+[31m-                                  0, NULL, NULL);[m
+[31m-[m
+[31m-        // (g) Perform the KNN logic on the host[m
+[31m-        Rcpp::NumericVector result(groupSize);[m
+[31m-        for (int row = 0; row < groupSize; row++) {[m
+[31m-            // rowPtr is float-based[m
+[31m-            float* rowPtr = &hostDistanceMatrix[row * groupSize];[m
+[31m-[m
+[31m-            // Suppose groupSize = N[m
+[31m-            int kClamped = (K > groupSize - 1) ? (groupSize - 1) : K;[m
+[31m-[m
+[31m-            // Then use kClamped both for nth_element and for the formula[m
+[31m-            std::nth_element(rowPtr, rowPtr + kClamped, rowPtr + groupSize);[m
+[31m-            float Ri = rowPtr[kClamped];[m
+[31m-[m
+[31m-            result[row] = kClamped / (groupSize * 2.0f * Ri);[m
+[31m-        }[m
+[32m+[m[32m        // -------------------------------------------- END DIS -------------------------------------------- //[m
+[32m+[m
+[32m+[m[32m        // (e) Calls the OpenCL to get the K smallest element[m
+[32m+[m[32m        // ------------------------------------------- START KTH ------------------------------------------- //[m
+[32m+[m
+[32m+[m[32m        // OpenCL_KNN.cl kth_element Call, the same memory from KNN is used[m
+[32m+[m
+[32m+[m[32m        // (1) Set kernel args[m
+[32m+[m[32m        err |= clSetKernelArg(kernel_kth, 0, sizeof(cl_mem), &distanceMatrixBuf);[m
+[32m+[m[32m        err |= clSetKernelArg(kernel_kth, 1, sizeof(cl_mem), &resultBuf);[m
+[32m+[m[32m        err |= clSetKernelArg(kernel_kth, 2, sizeof(int), &groupSize);[m
+[32m+[m[32m        err |= clSetKernelArg(kernel_kth, 3, sizeof(int), &K);[m
+[32m+[m
+[32m+[m[32m        // (2) Enqueue kernel (2D NDRange) - Runs the kernel program[m
+[32m+[m[32m        size_t globalWorkSize1[2] = { (size_t)groupSize, (size_t)groupSize };[m
+[32m+[m[32m        err = clEnqueueNDRangeKernel(queue, kernel_kth, 1, NULL, globalWorkSize1, NULL, 0, NULL, NULL);[m
+[32m+[m[32m        // Waits for the kernel to finish before executing any more code[m
+[32m+[m[32m        clFinish(queue);[m
+[32m+[m
+[32m+[m[32m        // -------------------------------------------- END KTH -------------------------------------------- //[m
+[32m+[m
+[32m+[m[32m        // (f) Read back the N result vector to host in double[m
+[32m+[m[41m        [m
+[32m+[m[32m        // Creates a vector to store the results[m
+[32m+[m[32m        std::vector<double> resultDbl(groupSize);[m
+[32m+[m[32m        // Reads the results from the OpenCL program[m
+[32m+[m[32m        err = clEnqueueReadBuffer(queue, resultBuf, CL_TRUE, 0, groupSize * sizeof(double), resultDbl.data(), 0, NULL, NULL);[m
+[32m+[m[32m        // Converts the results to a NumericVector[m
+[32m+[m[32m        Rcpp::NumericVector result(resultDbl.begin(), resultDbl.end());[m
+[32m+[m
+ [m
+         // (h) Average for this group[m
+         double IE = Rcpp::mean(result);[m
+[36m@@ -129,16 +145,18 @@[m [mdouble launchKernel(Rcpp::NumericVector data_x, Rcpp::NumericVector data_y, int[m
+ [m
+         // (i) Release buffers[m
+         clReleaseMemObject(xGroupBuf);[m
+[32m+[m[32m        clReleaseMemObject(resultBuf);[m
+         clReleaseMemObject(distanceMatrixBuf);[m
+     }[m
+ [m
+     // ---------------------------------------------------[m
+     // 6) Cleanup & Return[m
+     // ---------------------------------------------------[m
+[31m-    clReleaseKernel(kernel);[m
+[32m+[m[32m    clReleaseKernel(kernel_dis);[m
+[32m+[m[32m    clReleaseKernel(kernel_kth);[m
+     clReleaseProgram(program);[m
+     clReleaseCommandQueue(queue);[m
+     clReleaseContext(context);[m
+ [m
+     return globalAccumulator;[m
+[31m-}[m
+[32m+[m[32m}[m
+\ No newline at end of file[m

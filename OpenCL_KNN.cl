@@ -1,5 +1,11 @@
-__kernel void fillDistanceMatrix(__global const float* xGroup,
-                                 __global float* distanceMatrix,
+
+// Define type T, defaults to float
+#ifndef T
+#define T float
+#endif
+
+__kernel void fillDistanceMatrix(__global const T* xGroup,
+                                 __global T* distanceMatrix,
                                  const int groupSize)
 {
     int i = get_global_id(0);
@@ -11,8 +17,8 @@ __kernel void fillDistanceMatrix(__global const float* xGroup,
     }
 }
 
-__kernel void kth_element(__global float* distanceMatrix,
-                          __global double* result,
+__kernel void kth_element(__global T* distanceMatrix,
+                          __global T* result,
                                  const int groupSize,
                                  const int K)
 {
@@ -29,57 +35,55 @@ __kernel void kth_element(__global float* distanceMatrix,
 
     // ------------------------ START QUICKSELECT ------------------------ //
 
-    // Create starting points
-    int pivot = i * groupSize;
-    int lowerBound = pivot;
-    int upperBound = pivot + groupSize - 1;
+    // Gets the first and last indexes of the current group
+    int lowerBound = groupSize * i;
+    int upperBound = groupSize * i + groupSize - 1;
 
-    // Partition Counters
-    int left;
-    int right;
+    // Iterate until the lowerBound and upperBound are the same
+    while ( lowerBound <= upperBound ) {
+        
+        // --------------- START PARTITION --------------- //
+        
+        int size = upperBound - lowerBound + 1;
+        T pivot = distanceMatrix[upperBound];
 
-    // Iterate until pivot is equal to kClamped
-    while ( lowerBound < upperBound ) {
-
-        // Partitioning (Hoare's Algorithm)
-        pivot = lowerBound;
-        left = lowerBound - 1;
-        right = upperBound + 1;
-
-        // Partition the numbers
-        while (left < right) {
-            
-            // Increment on the left until left >= pivot
-            do {
-                left++;
-            } while (distanceMatrix[left] < distanceMatrix[pivot]);
-
-            // Increment on the right until right <= pivot
-            do {
-                right--;
-            } while (distanceMatrix[right] > distanceMatrix[pivot]);
-            
-            // Swap if left < right
-            if (left < right) {
-                float temp = distanceMatrix[left];
-                distanceMatrix[left] = distanceMatrix[right];
-                distanceMatrix[right] = temp;
+        int i = lowerBound - 1;
+        // Partitioning (Lomuto's Algorithm)
+        for (int j = lowerBound; j < upperBound; j++) {
+        
+            // If the current is less than the pivot
+            // Swap i and the current element
+            // And move i up to the next element
+            // (Essentially move an element from the right to the left,
+            // And then move to the element which will be swapped next)
+            if (distanceMatrix[j] < pivot) {
+                i++;
+                T temp = distanceMatrix[i];
+                distanceMatrix[i] = distanceMatrix[j];
+                distanceMatrix[j] = temp;
             }
+
         }
 
-        // Sets the new pivot to the right element
-        pivot = right;
+        // Swap the last non-swapped on the left and the pivot
+        T temp = distanceMatrix[i+1];
+        distanceMatrix[i+1] = distanceMatrix[upperBound];
+        distanceMatrix[upperBound] = temp;
 
-        // If the pivot is less than k, re-adjust to the upper-bound
-        if (pivot < kAdjusted) {
-            lowerBound = pivot+1;
-        // If the pivot is less than k, re-adjust to the lower-bound
-        } else if (pivot > kAdjusted) {
-            upperBound = pivot;
-        // If the pivot is the k, break the loop
-        } else if (pivot == kAdjusted) {
-            break;
+        // ---------------- END PARTITION ---------------- //
+
+        // Get the current pivot index
+        int pivotIndex = i + 1;
+
+        // Change the bounds if the pivot is not equal to k
+        if (pivotIndex == kAdjusted) {
+            break;    
+        } else if (pivotIndex > kAdjusted) {
+            upperBound = pivotIndex - 1;
+        } else {
+            lowerBound = pivotIndex + 1;
         }
+
     }
 
     // ------------------------- END QUICKSELECT ------------------------- //
