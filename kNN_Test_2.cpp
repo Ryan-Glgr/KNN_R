@@ -20,8 +20,9 @@ using namespace Rcpp;
 
 // Function Signatures
 float IE_xy(Rcpp::NumericVector data_x, Rcpp::NumericVector data_y, int k);
-Rcpp::NumericVector kNN(const Rcpp::NumericVector& data, int k);
+std::vector<double> kNN(const std::vector<double>& data, int k);
 void print_vector(const Rcpp::NumericVector& x);
+void computeKNN(const std::vector<double>& data, int k, std::vector<double>& results, int start, int end);
 
 // Function Definitions
 
@@ -32,59 +33,56 @@ void print_vector(const Rcpp::NumericVector& x);
   returns a vector of the kNN weights for each element of data.
   Uses std::nth_element for more efficient finding of the k-th smallest distance.
 */
-Rcpp::NumericVector kNN(const Rcpp::NumericVector& data, int k) {
-
+void computeKNN(const std::vector<double>& data, int k, std::vector<double>& results, int start, int end) {
     int N = data.size();
+    
+    for (int i = start; i < end; i++) {
+        std::vector<double> dist(N);
+        double x_i = data[i];
 
-    // Set the value of k to N-1 in the case where k > N-1
-    if (k > N - 1) {
-        k = N - 1;
+        // Compute distances
+        for (int j = 0; j < N; j++) {
+            dist[j] = std::abs(x_i - data[j]);
+        }
+
+        // Find k-th smallest distance
+        std::nth_element(dist.begin(), dist.begin() + k, dist.end());
+        double Ri = dist[k];
+
+        // Compute density approximation
+        results[i] = k / (N * 2 * Ri);
+    }
+}
+
+// Main kNN function (multi-threaded)
+std::vector<double> kNN(const std::vector<double>& data, int k) {
+    int N = data.size();
+    if (k > N - 1) k = N - 1;
+
+    std::vector<double> results(N, 0.0);
+    int num_threads = std::thread::hardware_concurrency();
+    int chunk_size = (N + num_threads - 1) / num_threads;
+
+    std::vector<std::thread> threads;
+
+    // Launch worker threads
+    for (int t = 0; t < num_threads; t++) {
+        int start = t * chunk_size;
+        int end = std::min(start + chunk_size, N);
+
+        if (start < end) {
+            threads.emplace_back(computeKNN, std::ref(data), k, std::ref(results), start, end);
+        }
     }
 
-    // Blank density vector
-    Rcpp::NumericVector result(N);
-
-    // Parallelize the loop over data points
-    //#pragma omp parallel
-    //{
-        
-        // Thread-local storage for distances
-        std::vector<double> dist(N);
-        std::vector<double> localResult(N);
-        std::vector<std::thread> threads;
-
-        //#pragma omp for schedule(static)
-        for (int i = 0; i < N; i++) {
-            double x_i = data[i];
-
-            // Compute absolute distances in parallel
-            for (int j = 0; j < N; j++) {
-                dist[j] = std::abs(x_i - data[j]);
-                threads.emplace_back(std::abs(x_i - data[j]), std::ref(dist[j]));
-            }
-
-            // Find the k-th smallest distance (original method)
-            std::nth_element(dist.begin(), dist.begin() + k, dist.end());
-            threads.emplace_back(std::nth_element(dist.begin(), dist.begin() + k, dist.end()));
-            double Ri = dist[k]; // k-th nearest distance
-
-            // Compute density approximation
-            localResult[i] = k / (N * 2 * Ri);
-            threads.join();
+    // Join all threads
+    for (auto& t : threads) {
+        if (t.joinable()) {
+            t.join();
         }
-        for (int i = 0; i < N; i++) {
-            result[i] = localResult[i];
-        }
-    //}
+    }
 
-    
-
-#if DEBUG
-    Rprintf("kNN result:       ");
-    print_vector(result);
-#endif
-   
-    return result;
+    return results;
 }
 
 /*
@@ -105,12 +103,17 @@ float IE_xy(Rcpp::NumericVector data_x, Rcpp::NumericVector data_y, int k) {
 
     //#pragma omp parallel for reduction(+:result) schedule(dynamic)
     for (int i = 0; i < yval.size(); i++) {
-        Rcpp::NumericVector x = data_x[data_y == yval[i]];
+        std::vector<double> x;
+        for (int j = 0; j < data_x.size(); j++) {
+            if (data_y[j] == yval[i]) {
+                x.push_back(data_x[j]);
+            }
+        }
         int x_size = x.size();  // Store size to avoid recomputation
 
         if (x_size > 1) {
-            Rcpp::NumericVector kNN_result = kNN(x, k);
-            float IE = Rcpp::mean(kNN_result);
+            std::vector<double> kNN_result = kNN(x, k);
+            float IE = std::accumulate(kNN_result.begin(), kNN_result.end(), 0.0) / kNN_result.size();
             float weight = static_cast<float>(x_size) / static_cast<float>(N);
             result += IE * weight;
         }
