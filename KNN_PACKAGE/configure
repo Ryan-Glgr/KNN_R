@@ -1,0 +1,33 @@
+#!/bin/sh
+# Configure, build, and install the KNN package using CMake.
+
+set -e
+
+# Ensure CMake is installed.
+if ! command -v cmake >/dev/null 2>&1; then
+    echo "CMake is required but not installed. Please install CMake."
+    exit 1
+fi
+
+# Define the source and build directories.
+SRC_DIR="src"
+BUILD_DIR="$SRC_DIR/build"
+
+# Create the build directory if it doesn't exist.
+mkdir -p "$BUILD_DIR"
+
+# Change to the build directory.
+cd "$BUILD_DIR"
+
+# Configure the project with a Release build and install prefix set to the package root.
+cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../../
+
+# Build the project.
+cmake --build . --config Release
+
+# Install the shared library.
+cmake --install . --config Release
+
+# Return to the package root.
+cd ../../
+exit 0

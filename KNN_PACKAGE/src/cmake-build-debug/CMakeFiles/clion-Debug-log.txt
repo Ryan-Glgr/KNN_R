@@ -1,0 +1,18 @@
+/Applications/CLion.app/Contents/bin/cmake/mac/x64/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/Applications/CLion.app/Contents/bin/ninja/mac/x64/ninja -G Ninja -S /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src -B /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/cmake-build-debug
+CMake Warning (dev) at CMakeLists.txt:14 (find_package):
+  Policy CMP0146 is not set: The FindCUDA module is removed.  Run "cmake
+  --help-policy CMP0146" for policy details.  Use the cmake_policy command to
+  set the policy and suppress this warning.
+
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CUDA_TOOLKIT_ROOT_DIR not found or specified
+-- Could NOT find CUDA (missing: CUDA_TOOLKIT_ROOT_DIR CUDA_NVCC_EXECUTABLE CUDA_INCLUDE_DIRS CUDA_CUDART_LIBRARY) 
+-- CUDA not found; excluding CUDA implementation.
+-- OpenCL found; including OpenCL implementation.
+-- Could NOT find OpenMP_CXX (missing: OpenMP_CXX_FLAGS OpenMP_CXX_LIB_NAMES) 
+-- Could NOT find OpenMP (missing: OpenMP_CXX_FOUND) 
+-- OpenMP not found; proceeding without OpenMP parallelization.
+-- Configuring done (1.2s)
+-- Generating done (0.0s)
+-- Build files have been written to: /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/cmake-build-debug

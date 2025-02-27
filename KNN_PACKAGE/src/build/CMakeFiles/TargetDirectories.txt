@@ -1,0 +1,7 @@
+/Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/build/CMakeFiles/KNN_PACKAGE.dir
+/Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/build/CMakeFiles/edit_cache.dir
+/Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/build/CMakeFiles/rebuild_cache.dir
+/Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/build/CMakeFiles/list_install_components.dir
+/Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/build/CMakeFiles/install.dir
+/Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/build/CMakeFiles/install/local.dir
+/Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/build/CMakeFiles/install/strip.dir
