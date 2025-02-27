@@ -25,31 +25,42 @@ __kernel void kth_element(__global T* distanceMatrix,
 
     // Since distanceMatrix is 1D memory in OpenCL, i and groupSize determines the row starting position
 
+    // Declare local variables
+    __local int lowerBound;
+    __local int upperBound;
+    __local int size;
+    __local int l;
+    __local int j;
+    __local int pivotIndex;
+    __local T pivot;
+    __local T Ri;
+
     // Get the current thread number (iteration in the "loop")
-    int i = get_global_id(0);
+    const int i = get_global_id(0);
 
     // Clamp k to the max group size
-    int kClamped = (K > groupSize - 1) ? (groupSize - 1) : K;
+    const int kClamped = (K > groupSize - 1) ? (groupSize - 1) : K;
     // Adjusts k to the correct position in the array
-    int kAdjusted = kClamped + i * groupSize;
+    const int kAdjusted = kClamped + i * groupSize;
 
     // ------------------------ START QUICKSELECT ------------------------ //
 
-    // Gets the first and last indexes of the current group
-    int lowerBound = groupSize * i;
-    int upperBound = groupSize * i + groupSize - 1;
+    // Gets the first and last indexes of the current grou
+    lowerBound = groupSize * i;
+    upperBound = groupSize * i + groupSize - 1;
 
     // Iterate until the lowerBound and upperBound are the same
     while ( lowerBound <= upperBound ) {
         
         // --------------- START PARTITION --------------- //
         
-        int size = upperBound - lowerBound + 1;
-        T pivot = distanceMatrix[upperBound];
+        size = upperBound - lowerBound + 1;
+        pivot = distanceMatrix[upperBound];
 
-        int i = lowerBound - 1;
+        l = lowerBound - 1;
         // Partitioning (Lomuto's Algorithm)
-        for (int j = lowerBound; j < upperBound; j++) {
+        j = lowerBound;
+        while (j < upperBound) {
         
             // If the current is less than the pivot
             // Swap i and the current element
@@ -57,23 +68,24 @@ __kernel void kth_element(__global T* distanceMatrix,
             // (Essentially move an element from the right to the left,
             // And then move to the element which will be swapped next)
             if (distanceMatrix[j] < pivot) {
-                i++;
-                T temp = distanceMatrix[i];
-                distanceMatrix[i] = distanceMatrix[j];
+                l++;
+                T temp = distanceMatrix[l];
+                distanceMatrix[l] = distanceMatrix[j];
                 distanceMatrix[j] = temp;
             }
 
+            j++;
         }
 
         // Swap the last non-swapped on the left and the pivot
-        T temp = distanceMatrix[i+1];
-        distanceMatrix[i+1] = distanceMatrix[upperBound];
+        T temp = distanceMatrix[l+1];
+        distanceMatrix[l+1] = distanceMatrix[upperBound];
         distanceMatrix[upperBound] = temp;
 
         // ---------------- END PARTITION ---------------- //
 
         // Get the current pivot index
-        int pivotIndex = i + 1;
+        pivotIndex = l + 1;
 
         // Change the bounds if the pivot is not equal to k
         if (pivotIndex == kAdjusted) {
@@ -91,7 +103,7 @@ __kernel void kth_element(__global T* distanceMatrix,
 
     // After QuickSelect, store the found element in Ri
     // Calculate row element
-    float Ri = distanceMatrix[kAdjusted];
+    Ri = distanceMatrix[kAdjusted];
     // Calculate the result to be read back to the program
     result[i] = kClamped / (groupSize * 2.0f * Ri);
 
