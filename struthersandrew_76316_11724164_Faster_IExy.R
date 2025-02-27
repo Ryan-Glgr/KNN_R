@@ -9,11 +9,16 @@ Sys.setenv("PKG_CXXFLAGS" = "-fopenmp")
 Sys.setenv("PKG_LIBS" = "-fopenmp")
 
 # Source C++ code
+<<<<<<< HEAD
 #sourceCpp("Main_kNN_Implementation.cpp")
 #sourceCpp("kNN_Test_2.cpp")
 #sourceCpp("kNN_Test_3.cpp")
 sourceCpp("kNN_Test_4.cpp")
 
+=======
+sourceCpp("kNN_Test_2.cpp")
+#sourceCpp("kNN_Test_3.cpp")
+>>>>>>> f82f040b7afcd0e6b5ad882f6c9a8a31eaeb69cb
 
 # Read data using fread for faster processing
 Data <- fread("data.csv", skip = 2)
