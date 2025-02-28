@@ -1,0 +1,89 @@
+#!/bin/sh
+
+# Initialize variables
+CFLAGS=""
+CXXFLAGS=""
+LIBS=""
+
+# Function to check for OpenCL
+check_opencl() {
+  echo "Checking for OpenCL..."
+
+  # Try Linux-style OpenCL header
+  if echo '#include <CL/cl.h>' | ${CC} -E - 2>/dev/null; then
+    CFLAGS="${CFLAGS} -DUSE_OPENCL"
+    CXXFLAGS="${CXXFLAGS} -DUSE_OPENCL"
+    LIBS="${LIBS} -lOpenCL"
+    echo "OpenCL found (Linux style)."
+    return
+  fi
+
+  # Try macOS-style OpenCL header
+  if echo '#include <OpenCL/opencl.h>' | ${CC} -E - 2>/dev/null; then
+    CFLAGS="${CFLAGS} -DUSE_OPENCL"
+    CXXFLAGS="${CXXFLAGS} -DUSE_OPENCL"
+    LIBS="${LIBS} -framework OpenCL"
+    echo "OpenCL found (macOS style)."
+    return
+  fi
+
+  echo "OpenCL not found."
+}
+
+# Function to check for CUDA
+check_cuda() {
+  echo "Checking for CUDA..."
+  if command -v nvcc >/dev/null 2>&1; then
+    CFLAGS="${CFLAGS} -DUSE_CUDA"
+    CXXFLAGS="${CXXFLAGS} -DUSE_CUDA"
+    LIBS="${LIBS} -lcudart -lcuda"
+    echo "CUDA found."
+  else
+    echo "CUDA not found."
+  fi
+}
+
+# Function to check for OpenMP
+check_openmp() {
+  echo "Checking for OpenMP..."
+  if echo '#include <omp.h>' | ${CC} -fopenmp -E - 2>/dev/null; then
+    CFLAGS="${CFLAGS} -fopenmp"
+    CXXFLAGS="${CXXFLAGS} -fopenmp"
+    echo "OpenMP found."
+  else
+    echo "OpenMP not found."
+  fi
+}
+
+# Detect platform
+UNAME=$(uname -s)
+
+case "${UNAME}" in
+  Darwin)
+    # macOS
+    echo "Configuring for macOS..."
+    check_opencl
+    check_cuda
+    check_openmp
+    ;;
+  Linux)
+    # Linux
+    echo "Configuring for Linux..."
+    check_opencl
+    check_cuda
+    check_openmp
+    ;;
+  *)
+    echo "Unsupported platform: ${UNAME}"
+    ;;
+esac
+
+# Create the src/Makevars file with the detected flags
+mkdir -p src
+cat <<EOF > src/Makevars
+PKG_CFLAGS=${CFLAGS}
+PKG_CXXFLAGS=${CXXFLAGS}
+PKG_LIBS=${LIBS}
+EOF
+
+echo "Configuration complete."

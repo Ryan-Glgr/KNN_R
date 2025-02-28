@@ -54,10 +54,10 @@ RM = /usr/local/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src
+CMAKE_SOURCE_DIR = /Users/ryangallagher/Desktop/CS_Labor/CS467/PackageWithTestScript/KNN_PACKAGE/src
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/build
+CMAKE_BINARY_DIR = /Users/ryangallagher/Desktop/CS_Labor/CS467/PackageWithTestScript/KNN_PACKAGE/src/build
 
 #=============================================================================
 # Directory level rules for the build root directory
@@ -85,14 +85,14 @@ clean: CMakeFiles/KNN_PACKAGE.dir/clean
 CMakeFiles/KNN_PACKAGE.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/KNN_PACKAGE.dir/build.make CMakeFiles/KNN_PACKAGE.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/KNN_PACKAGE.dir/build.make CMakeFiles/KNN_PACKAGE.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/build/CMakeFiles --progress-num=1,2,3,4 "Built target KNN_PACKAGE"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/ryangallagher/Desktop/CS_Labor/CS467/PackageWithTestScript/KNN_PACKAGE/src/build/CMakeFiles --progress-num=1,2,3,4 "Built target KNN_PACKAGE"
 .PHONY : CMakeFiles/KNN_PACKAGE.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/KNN_PACKAGE.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/build/CMakeFiles 4
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/ryangallagher/Desktop/CS_Labor/CS467/PackageWithTestScript/KNN_PACKAGE/src/build/CMakeFiles 4
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/KNN_PACKAGE.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/ryangallagher/Desktop/CS_Labor/CS467/PackageWithTestScript/KNN_PACKAGE/src/build/CMakeFiles 0
 .PHONY : CMakeFiles/KNN_PACKAGE.dir/rule
 
 # Convenience name for target.
@@ -102,7 +102,7 @@ KNN_PACKAGE: CMakeFiles/KNN_PACKAGE.dir/rule
 # codegen rule for target.
 CMakeFiles/KNN_PACKAGE.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/KNN_PACKAGE.dir/build.make CMakeFiles/KNN_PACKAGE.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/build/CMakeFiles --progress-num=1,2,3,4 "Finished codegen for target KNN_PACKAGE"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/ryangallagher/Desktop/CS_Labor/CS467/PackageWithTestScript/KNN_PACKAGE/src/build/CMakeFiles --progress-num=1,2,3,4 "Finished codegen for target KNN_PACKAGE"
 .PHONY : CMakeFiles/KNN_PACKAGE.dir/codegen
 
 # clean rule for target.

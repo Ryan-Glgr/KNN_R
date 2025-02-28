@@ -1,6 +1,6 @@
 CMakeFiles/KNN_PACKAGE.dir/library.cpp.o: \
-  /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/library.cpp \
-  /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/library.h \
+  /Users/ryangallagher/Desktop/CS_Labor/CS467/PackageWithTestScript/KNN_PACKAGE/src/library.cpp \
+  /Users/ryangallagher/Desktop/CS_Labor/CS467/PackageWithTestScript/KNN_PACKAGE/src/library.h \
   /Users/ryangallagher/R/library/Rcpp/include/Rcpp.h \
   /Users/ryangallagher/R/library/Rcpp/include/RcppCommon.h \
   /Users/ryangallagher/R/library/Rcpp/include/Rcpp/r/headers.h \

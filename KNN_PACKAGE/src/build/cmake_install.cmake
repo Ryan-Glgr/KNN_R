@@ -1,8 +1,8 @@
-# Install script for directory: /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src
+# Install script for directory: /Users/ryangallagher/Desktop/CS_Labor/CS467/PackageWithTestScript/KNN_PACKAGE/src
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE")
+  set(CMAKE_INSTALL_PREFIX "/Users/ryangallagher/Desktop/CS_Labor/CS467/PackageWithTestScript/KNN_PACKAGE")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -38,7 +38,7 @@ if(NOT DEFINED CMAKE_OBJDUMP)
 endif()
 
 if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/libs" TYPE SHARED_LIBRARY FILES "/Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/libs/CWUKNN.so")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/libs" TYPE SHARED_LIBRARY FILES "/Users/ryangallagher/Desktop/CS_Labor/CS467/PackageWithTestScript/KNN_PACKAGE/libs/CWUKNN.so")
   if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/libs/CWUKNN.so" AND
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/libs/CWUKNN.so")
     if(CMAKE_INSTALL_DO_STRIP)
@@ -53,7 +53,7 @@ endif()
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
 if(CMAKE_INSTALL_LOCAL_ONLY)
-  file(WRITE "/Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/build/install_local_manifest.txt"
+  file(WRITE "/Users/ryangallagher/Desktop/CS_Labor/CS467/PackageWithTestScript/KNN_PACKAGE/src/build/install_local_manifest.txt"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
 endif()
 if(CMAKE_INSTALL_COMPONENT)
@@ -69,6 +69,6 @@ else()
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
-  file(WRITE "/Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/build/${CMAKE_INSTALL_MANIFEST}"
+  file(WRITE "/Users/ryangallagher/Desktop/CS_Labor/CS467/PackageWithTestScript/KNN_PACKAGE/src/build/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
 endif()

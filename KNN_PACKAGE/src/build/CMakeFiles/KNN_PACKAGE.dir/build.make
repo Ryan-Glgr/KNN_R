@@ -53,10 +53,10 @@ RM = /usr/local/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src
+CMAKE_SOURCE_DIR = /Users/ryangallagher/Desktop/CS_Labor/CS467/PackageWithTestScript/KNN_PACKAGE/src
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/build
+CMAKE_BINARY_DIR = /Users/ryangallagher/Desktop/CS_Labor/CS467/PackageWithTestScript/KNN_PACKAGE/src/build
 
 # Include any dependencies generated for this target.
 include CMakeFiles/KNN_PACKAGE.dir/depend.make
@@ -73,46 +73,46 @@ CMakeFiles/KNN_PACKAGE.dir/codegen:
 .PHONY : CMakeFiles/KNN_PACKAGE.dir/codegen
 
 CMakeFiles/KNN_PACKAGE.dir/library.cpp.o: CMakeFiles/KNN_PACKAGE.dir/flags.make
-CMakeFiles/KNN_PACKAGE.dir/library.cpp.o: /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/library.cpp
+CMakeFiles/KNN_PACKAGE.dir/library.cpp.o: /Users/ryangallagher/Desktop/CS_Labor/CS467/PackageWithTestScript/KNN_PACKAGE/src/library.cpp
 CMakeFiles/KNN_PACKAGE.dir/library.cpp.o: CMakeFiles/KNN_PACKAGE.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/KNN_PACKAGE.dir/library.cpp.o"
-	/Library/Developer/CommandLineTools/usr/bin/clang++  -std=gnu++17 $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/KNN_PACKAGE.dir/library.cpp.o -MF CMakeFiles/KNN_PACKAGE.dir/library.cpp.o.d -o CMakeFiles/KNN_PACKAGE.dir/library.cpp.o -c /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/library.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/ryangallagher/Desktop/CS_Labor/CS467/PackageWithTestScript/KNN_PACKAGE/src/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/KNN_PACKAGE.dir/library.cpp.o"
+	/Library/Developer/CommandLineTools/usr/bin/clang++  -std=gnu++17 $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/KNN_PACKAGE.dir/library.cpp.o -MF CMakeFiles/KNN_PACKAGE.dir/library.cpp.o.d -o CMakeFiles/KNN_PACKAGE.dir/library.cpp.o -c /Users/ryangallagher/Desktop/CS_Labor/CS467/PackageWithTestScript/KNN_PACKAGE/src/library.cpp
 
 CMakeFiles/KNN_PACKAGE.dir/library.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/KNN_PACKAGE.dir/library.cpp.i"
-	/Library/Developer/CommandLineTools/usr/bin/clang++  -std=gnu++17 $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/library.cpp > CMakeFiles/KNN_PACKAGE.dir/library.cpp.i
+	/Library/Developer/CommandLineTools/usr/bin/clang++  -std=gnu++17 $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/ryangallagher/Desktop/CS_Labor/CS467/PackageWithTestScript/KNN_PACKAGE/src/library.cpp > CMakeFiles/KNN_PACKAGE.dir/library.cpp.i
 
 CMakeFiles/KNN_PACKAGE.dir/library.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/KNN_PACKAGE.dir/library.cpp.s"
-	/Library/Developer/CommandLineTools/usr/bin/clang++  -std=gnu++17 $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/library.cpp -o CMakeFiles/KNN_PACKAGE.dir/library.cpp.s
+	/Library/Developer/CommandLineTools/usr/bin/clang++  -std=gnu++17 $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/ryangallagher/Desktop/CS_Labor/CS467/PackageWithTestScript/KNN_PACKAGE/src/library.cpp -o CMakeFiles/KNN_PACKAGE.dir/library.cpp.s
 
 CMakeFiles/KNN_PACKAGE.dir/CPP_KNN.cpp.o: CMakeFiles/KNN_PACKAGE.dir/flags.make
-CMakeFiles/KNN_PACKAGE.dir/CPP_KNN.cpp.o: /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/CPP_KNN.cpp
+CMakeFiles/KNN_PACKAGE.dir/CPP_KNN.cpp.o: /Users/ryangallagher/Desktop/CS_Labor/CS467/PackageWithTestScript/KNN_PACKAGE/src/CPP_KNN.cpp
 CMakeFiles/KNN_PACKAGE.dir/CPP_KNN.cpp.o: CMakeFiles/KNN_PACKAGE.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/KNN_PACKAGE.dir/CPP_KNN.cpp.o"
-	/Library/Developer/CommandLineTools/usr/bin/clang++  -std=gnu++17 $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/KNN_PACKAGE.dir/CPP_KNN.cpp.o -MF CMakeFiles/KNN_PACKAGE.dir/CPP_KNN.cpp.o.d -o CMakeFiles/KNN_PACKAGE.dir/CPP_KNN.cpp.o -c /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/CPP_KNN.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/ryangallagher/Desktop/CS_Labor/CS467/PackageWithTestScript/KNN_PACKAGE/src/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/KNN_PACKAGE.dir/CPP_KNN.cpp.o"
+	/Library/Developer/CommandLineTools/usr/bin/clang++  -std=gnu++17 $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/KNN_PACKAGE.dir/CPP_KNN.cpp.o -MF CMakeFiles/KNN_PACKAGE.dir/CPP_KNN.cpp.o.d -o CMakeFiles/KNN_PACKAGE.dir/CPP_KNN.cpp.o -c /Users/ryangallagher/Desktop/CS_Labor/CS467/PackageWithTestScript/KNN_PACKAGE/src/CPP_KNN.cpp
 
 CMakeFiles/KNN_PACKAGE.dir/CPP_KNN.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/KNN_PACKAGE.dir/CPP_KNN.cpp.i"
-	/Library/Developer/CommandLineTools/usr/bin/clang++  -std=gnu++17 $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/CPP_KNN.cpp > CMakeFiles/KNN_PACKAGE.dir/CPP_KNN.cpp.i
+	/Library/Developer/CommandLineTools/usr/bin/clang++  -std=gnu++17 $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/ryangallagher/Desktop/CS_Labor/CS467/PackageWithTestScript/KNN_PACKAGE/src/CPP_KNN.cpp > CMakeFiles/KNN_PACKAGE.dir/CPP_KNN.cpp.i
 
 CMakeFiles/KNN_PACKAGE.dir/CPP_KNN.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/KNN_PACKAGE.dir/CPP_KNN.cpp.s"
-	/Library/Developer/CommandLineTools/usr/bin/clang++  -std=gnu++17 $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/CPP_KNN.cpp -o CMakeFiles/KNN_PACKAGE.dir/CPP_KNN.cpp.s
+	/Library/Developer/CommandLineTools/usr/bin/clang++  -std=gnu++17 $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/ryangallagher/Desktop/CS_Labor/CS467/PackageWithTestScript/KNN_PACKAGE/src/CPP_KNN.cpp -o CMakeFiles/KNN_PACKAGE.dir/CPP_KNN.cpp.s
 
 CMakeFiles/KNN_PACKAGE.dir/openCL_KNN.cpp.o: CMakeFiles/KNN_PACKAGE.dir/flags.make
-CMakeFiles/KNN_PACKAGE.dir/openCL_KNN.cpp.o: /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/openCL_KNN.cpp
+CMakeFiles/KNN_PACKAGE.dir/openCL_KNN.cpp.o: /Users/ryangallagher/Desktop/CS_Labor/CS467/PackageWithTestScript/KNN_PACKAGE/src/openCL_KNN.cpp
 CMakeFiles/KNN_PACKAGE.dir/openCL_KNN.cpp.o: CMakeFiles/KNN_PACKAGE.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/KNN_PACKAGE.dir/openCL_KNN.cpp.o"
-	/Library/Developer/CommandLineTools/usr/bin/clang++  -std=gnu++17 $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/KNN_PACKAGE.dir/openCL_KNN.cpp.o -MF CMakeFiles/KNN_PACKAGE.dir/openCL_KNN.cpp.o.d -o CMakeFiles/KNN_PACKAGE.dir/openCL_KNN.cpp.o -c /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/openCL_KNN.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/ryangallagher/Desktop/CS_Labor/CS467/PackageWithTestScript/KNN_PACKAGE/src/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/KNN_PACKAGE.dir/openCL_KNN.cpp.o"
+	/Library/Developer/CommandLineTools/usr/bin/clang++  -std=gnu++17 $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/KNN_PACKAGE.dir/openCL_KNN.cpp.o -MF CMakeFiles/KNN_PACKAGE.dir/openCL_KNN.cpp.o.d -o CMakeFiles/KNN_PACKAGE.dir/openCL_KNN.cpp.o -c /Users/ryangallagher/Desktop/CS_Labor/CS467/PackageWithTestScript/KNN_PACKAGE/src/openCL_KNN.cpp
 
 CMakeFiles/KNN_PACKAGE.dir/openCL_KNN.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/KNN_PACKAGE.dir/openCL_KNN.cpp.i"
-	/Library/Developer/CommandLineTools/usr/bin/clang++  -std=gnu++17 $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/openCL_KNN.cpp > CMakeFiles/KNN_PACKAGE.dir/openCL_KNN.cpp.i
+	/Library/Developer/CommandLineTools/usr/bin/clang++  -std=gnu++17 $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/ryangallagher/Desktop/CS_Labor/CS467/PackageWithTestScript/KNN_PACKAGE/src/openCL_KNN.cpp > CMakeFiles/KNN_PACKAGE.dir/openCL_KNN.cpp.i
 
 CMakeFiles/KNN_PACKAGE.dir/openCL_KNN.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/KNN_PACKAGE.dir/openCL_KNN.cpp.s"
-	/Library/Developer/CommandLineTools/usr/bin/clang++  -std=gnu++17 $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/openCL_KNN.cpp -o CMakeFiles/KNN_PACKAGE.dir/openCL_KNN.cpp.s
+	/Library/Developer/CommandLineTools/usr/bin/clang++  -std=gnu++17 $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/ryangallagher/Desktop/CS_Labor/CS467/PackageWithTestScript/KNN_PACKAGE/src/openCL_KNN.cpp -o CMakeFiles/KNN_PACKAGE.dir/openCL_KNN.cpp.s
 
 # Object files for target KNN_PACKAGE
 KNN_PACKAGE_OBJECTS = \
@@ -123,16 +123,16 @@ KNN_PACKAGE_OBJECTS = \
 # External object files for target KNN_PACKAGE
 KNN_PACKAGE_EXTERNAL_OBJECTS =
 
-/Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/libs/CWUKNN.so: CMakeFiles/KNN_PACKAGE.dir/library.cpp.o
-/Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/libs/CWUKNN.so: CMakeFiles/KNN_PACKAGE.dir/CPP_KNN.cpp.o
-/Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/libs/CWUKNN.so: CMakeFiles/KNN_PACKAGE.dir/openCL_KNN.cpp.o
-/Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/libs/CWUKNN.so: CMakeFiles/KNN_PACKAGE.dir/build.make
-/Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/libs/CWUKNN.so: CMakeFiles/KNN_PACKAGE.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Linking CXX shared library /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/libs/CWUKNN.so"
+/Users/ryangallagher/Desktop/CS_Labor/CS467/PackageWithTestScript/KNN_PACKAGE/libs/CWUKNN.so: CMakeFiles/KNN_PACKAGE.dir/library.cpp.o
+/Users/ryangallagher/Desktop/CS_Labor/CS467/PackageWithTestScript/KNN_PACKAGE/libs/CWUKNN.so: CMakeFiles/KNN_PACKAGE.dir/CPP_KNN.cpp.o
+/Users/ryangallagher/Desktop/CS_Labor/CS467/PackageWithTestScript/KNN_PACKAGE/libs/CWUKNN.so: CMakeFiles/KNN_PACKAGE.dir/openCL_KNN.cpp.o
+/Users/ryangallagher/Desktop/CS_Labor/CS467/PackageWithTestScript/KNN_PACKAGE/libs/CWUKNN.so: CMakeFiles/KNN_PACKAGE.dir/build.make
+/Users/ryangallagher/Desktop/CS_Labor/CS467/PackageWithTestScript/KNN_PACKAGE/libs/CWUKNN.so: CMakeFiles/KNN_PACKAGE.dir/link.txt
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/ryangallagher/Desktop/CS_Labor/CS467/PackageWithTestScript/KNN_PACKAGE/src/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Linking CXX shared library /Users/ryangallagher/Desktop/CS_Labor/CS467/PackageWithTestScript/KNN_PACKAGE/libs/CWUKNN.so"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/KNN_PACKAGE.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
-CMakeFiles/KNN_PACKAGE.dir/build: /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/libs/CWUKNN.so
+CMakeFiles/KNN_PACKAGE.dir/build: /Users/ryangallagher/Desktop/CS_Labor/CS467/PackageWithTestScript/KNN_PACKAGE/libs/CWUKNN.so
 .PHONY : CMakeFiles/KNN_PACKAGE.dir/build
 
 CMakeFiles/KNN_PACKAGE.dir/clean:
@@ -140,6 +140,6 @@ CMakeFiles/KNN_PACKAGE.dir/clean:
 .PHONY : CMakeFiles/KNN_PACKAGE.dir/clean
 
 CMakeFiles/KNN_PACKAGE.dir/depend:
-	cd /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/build /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/build /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/build/CMakeFiles/KNN_PACKAGE.dir/DependInfo.cmake "--color=$(COLOR)"
+	cd /Users/ryangallagher/Desktop/CS_Labor/CS467/PackageWithTestScript/KNN_PACKAGE/src/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /Users/ryangallagher/Desktop/CS_Labor/CS467/PackageWithTestScript/KNN_PACKAGE/src /Users/ryangallagher/Desktop/CS_Labor/CS467/PackageWithTestScript/KNN_PACKAGE/src /Users/ryangallagher/Desktop/CS_Labor/CS467/PackageWithTestScript/KNN_PACKAGE/src/build /Users/ryangallagher/Desktop/CS_Labor/CS467/PackageWithTestScript/KNN_PACKAGE/src/build /Users/ryangallagher/Desktop/CS_Labor/CS467/PackageWithTestScript/KNN_PACKAGE/src/build/CMakeFiles/KNN_PACKAGE.dir/DependInfo.cmake "--color=$(COLOR)"
 .PHONY : CMakeFiles/KNN_PACKAGE.dir/depend
 

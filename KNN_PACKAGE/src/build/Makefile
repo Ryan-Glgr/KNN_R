@@ -57,10 +57,10 @@ RM = /usr/local/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src
+CMAKE_SOURCE_DIR = /Users/ryangallagher/Desktop/CS_Labor/CS467/PackageWithTestScript/KNN_PACKAGE/src
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/build
+CMAKE_BINARY_DIR = /Users/ryangallagher/Desktop/CS_Labor/CS467/PackageWithTestScript/KNN_PACKAGE/src/build
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -132,9 +132,9 @@ install/strip/fast: preinstall/fast
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/build/CMakeFiles /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/build//CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/ryangallagher/Desktop/CS_Labor/CS467/PackageWithTestScript/KNN_PACKAGE/src/build/CMakeFiles /Users/ryangallagher/Desktop/CS_Labor/CS467/PackageWithTestScript/KNN_PACKAGE/src/build//CMakeFiles/progress.marks
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/ryangallagher/Desktop/CS_Labor/CS467/PackageWithTestScript/KNN_PACKAGE/src/build/CMakeFiles 0
 .PHONY : all
 
 # The main clean target

@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "/Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/libs/CWUKNN.pdb"
-  "/Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/libs/CWUKNN.so"
+  "/Users/ryangallagher/Desktop/CS_Labor/CS467/PackageWithTestScript/KNN_PACKAGE/libs/CWUKNN.pdb"
+  "/Users/ryangallagher/Desktop/CS_Labor/CS467/PackageWithTestScript/KNN_PACKAGE/libs/CWUKNN.so"
   "CMakeFiles/KNN_PACKAGE.dir/CPP_KNN.cpp.o"
   "CMakeFiles/KNN_PACKAGE.dir/CPP_KNN.cpp.o.d"
   "CMakeFiles/KNN_PACKAGE.dir/library.cpp.o"

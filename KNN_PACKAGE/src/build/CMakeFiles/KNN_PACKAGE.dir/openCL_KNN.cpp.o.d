@@ -1,5 +1,5 @@
 CMakeFiles/KNN_PACKAGE.dir/openCL_KNN.cpp.o: \
-  /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/openCL_KNN.cpp \
+  /Users/ryangallagher/Desktop/CS_Labor/CS467/PackageWithTestScript/KNN_PACKAGE/src/openCL_KNN.cpp \
   /Library/Developer/CommandLineTools/SDKs/MacOSX15.2.sdk/usr/include/c++/v1/iostream \
   /Library/Developer/CommandLineTools/SDKs/MacOSX15.2.sdk/usr/include/c++/v1/__assert \
   /Library/Developer/CommandLineTools/SDKs/MacOSX15.2.sdk/usr/include/c++/v1/__assertion_handler \
@@ -1402,4 +1402,4 @@ CMakeFiles/KNN_PACKAGE.dir/openCL_KNN.cpp.o: \
   /Library/Developer/CommandLineTools/usr/lib/clang/16/include/mmintrin.h \
   /Library/Developer/CommandLineTools/usr/lib/clang/16/include/mm_malloc.h \
   /Library/Developer/CommandLineTools/usr/lib/clang/16/include/emmintrin.h \
-  /Users/ryangallagher/Desktop/CS_Labor/CS467/KNN_PACKAGE/src/library.h
+  /Users/ryangallagher/Desktop/CS_Labor/CS467/PackageWithTestScript/KNN_PACKAGE/src/library.h
