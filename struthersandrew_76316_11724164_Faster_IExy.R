@@ -2,14 +2,18 @@
 library("Rcpp")
 library("data.table")
 
-# load in the CUDA Library
-pathToDll <- "CUDA\\cmake-build-debug\\CudaRLibrary.dll"
+
 Data <- fread("data.csv", skip = 2)
 
-test1 <- (Data$MATHEFF)[1:50000]
-test2 <- (Data$MATINTFC)[1:50000]
+test1 <- (Data$MATHEFF)[1:100000]
+test2 <- (Data$MATINTFC)[1:100000]
+
 size <- length(test2)
 k_values <- seq(5000, 20000, 2500)
+
+
+# load in the CUDA Library
+pathToDll <- "CUDA\\cmake-build-debug\\CudaRLibrary.dll"
 
 dyn.load(pathToDll)
 
@@ -52,7 +56,7 @@ k_values <- seq(5000, 5000, 2500)
 
 # Measure time and compute IE values
 system.time({
-  result <- compute_IE(MATHEFF[1:50000], MATINTFC[1:50000], k_values)
+  result <- compute_IE(MATHEFF[1:100000], MATINTFC[1:100000], k_values)
 })
 
 # Plot the results
