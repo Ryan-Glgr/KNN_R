@@ -1,33 +1,89 @@
 #!/bin/sh
-# Configure, build, and install the KNN package using CMake.
 
-set -e
+# Initialize variables
+CFLAGS=""
+CXXFLAGS=""
+LIBS=""
 
-# Ensure CMake is installed.
-if ! command -v cmake >/dev/null 2>&1; then
-    echo "CMake is required but not installed. Please install CMake."
-    exit 1
-fi
+# Function to check for OpenCL
+check_opencl() {
+  echo "Checking for OpenCL..."
 
-# Define the source and build directories.
-SRC_DIR="src"
-BUILD_DIR="$SRC_DIR/build"
+  # Try Linux-style OpenCL header
+  if echo '#include <CL/cl.h>' | ${CC} -E - 2>/dev/null; then
+    CFLAGS="${CFLAGS} -DUSE_OPENCL"
+    CXXFLAGS="${CXXFLAGS} -DUSE_OPENCL"
+    LIBS="${LIBS} -lOpenCL"
+    echo "OpenCL found (Linux style)."
+    return
+  fi
 
-# Create the build directory if it doesn't exist.
-mkdir -p "$BUILD_DIR"
+  # Try macOS-style OpenCL header
+  if echo '#include <OpenCL/opencl.h>' | ${CC} -E - 2>/dev/null; then
+    CFLAGS="${CFLAGS} -DUSE_OPENCL"
+    CXXFLAGS="${CXXFLAGS} -DUSE_OPENCL"
+    LIBS="${LIBS} -framework OpenCL"
+    echo "OpenCL found (macOS style)."
+    return
+  fi
 
-# Change to the build directory.
-cd "$BUILD_DIR"
+  echo "OpenCL not found."
+}
 
-# Configure the project with a Release build and install prefix set to the package root.
-cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../../
+# Function to check for CUDA
+check_cuda() {
+  echo "Checking for CUDA..."
+  if command -v nvcc >/dev/null 2>&1; then
+    CFLAGS="${CFLAGS} -DUSE_CUDA"
+    CXXFLAGS="${CXXFLAGS} -DUSE_CUDA"
+    LIBS="${LIBS} -lcudart -lcuda"
+    echo "CUDA found."
+  else
+    echo "CUDA not found."
+  fi
+}
 
-# Build the project.
-cmake --build . --config Release
+# Function to check for OpenMP
+check_openmp() {
+  echo "Checking for OpenMP..."
+  if echo '#include <omp.h>' | ${CC} -fopenmp -E - 2>/dev/null; then
+    CFLAGS="${CFLAGS} -fopenmp"
+    CXXFLAGS="${CXXFLAGS} -fopenmp"
+    echo "OpenMP found."
+  else
+    echo "OpenMP not found."
+  fi
+}
 
-# Install the shared library.
-cmake --install . --config Release
+# Detect platform
+UNAME=$(uname -s)
 
-# Return to the package root.
-cd ../../
-exit 0
+case "${UNAME}" in
+  Darwin)
+    # macOS
+    echo "Configuring for macOS..."
+    check_opencl
+    check_cuda
+    check_openmp
+    ;;
+  Linux)
+    # Linux
+    echo "Configuring for Linux..."
+    check_opencl
+    check_cuda
+    check_openmp
+    ;;
+  *)
+    echo "Unsupported platform: ${UNAME}"
+    ;;
+esac
+
+# Create the src/Makevars file with the detected flags
+mkdir -p src
+cat <<EOF > src/Makevars
+PKG_CFLAGS=${CFLAGS}
+PKG_CXXFLAGS=${CXXFLAGS}
+PKG_LIBS=${LIBS}
+EOF
+
+echo "Configuration complete."

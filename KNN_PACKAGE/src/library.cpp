@@ -1,5 +1,4 @@
 #include "library.h"
-
 // KNN function is what is available through R, this takes two vectors and a K.
 // additionally, allow users to choose float or double precision, and allow them to choose an implementation.
 
