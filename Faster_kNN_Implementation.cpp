@@ -37,13 +37,9 @@ Rcpp::NumericVector kNN(Rcpp::NumericVector data, int k)
     // Blank density vector
     Rcpp::NumericVector result(N);
 
-    // Parallelize the loop over data points
-    #pragma omp parallel
     {
         // Thread-local storage for distances
         std::vector<float> dist(N);
-
-        #pragma omp for schedule(static)
         for (int i = 0; i < N; i++)
         {
             // Compute the absolute distances between data[i] and all other elements
@@ -81,7 +77,6 @@ float IE_xy(Rcpp::NumericVector data_x, Rcpp::NumericVector data_y, int k)
     // Store the result in a float, avoiding creating two separate arrays for IE and weight
     float result = 0;
 
-    #pragma omp parallel for reduction(+:result) schedule(dynamic)
     for (int i = 0; i < yval.size(); i++)
     {
         // Use vector logic to find the subset of x data that corresponds to this unique y-value
