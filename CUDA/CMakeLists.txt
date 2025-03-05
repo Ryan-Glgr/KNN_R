@@ -3,12 +3,11 @@ project(CudaRLibrary CUDA)
 
 set(CMAKE_CUDA_STANDARD 20)
 
-# to make the dll
+
 add_library(CudaRLibrary SHARED
         run.cu
         testCuda.cuh)
 
-# to make an exe
 #add_executable(CudaRLibrary
 #        run.cu
 #        testCuda.cuh)

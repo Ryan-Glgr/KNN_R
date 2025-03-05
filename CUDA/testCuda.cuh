@@ -1,4 +1,3 @@
-
 #include <vector>
 #include <algorithm>
 #include <set>
@@ -6,18 +5,28 @@
 #include <thrust/sort.h>
 #include <chrono>
 
+// sets if this program will be ran with naive profiling.
 #define PROFILE false
+
+// the amount of threads per block when CUDA kernels are called.
 #define threadsPerBlock 128
+
+// how many CPU threads will be ran with their own default CUDA stream.
 #define threadCount 1
 
-auto profileClock = std::chrono::high_resolution_clock::now();
-long double runTime = 0;
-
+auto profileClock = std::chrono::high_resolution_clock::now(); //! the clock that will help keep track of the runtime.
+long double runTime = 0; //! the runtime of this application.
 
 __device__ double* devResult;
 
 
-
+/*! \fn __device__ double atomicDoubleAdd(double* address, double val).
+ *  \brief does atomic addition on the double data type, as some cards do not support this inside of CUDA at the time of writing. function definition taken from the Nvidia documentation.
+ *  \author Nvidia
+ *  \param address the address of the double val is added to.
+ *  \param val the value that will be added to the double at the given address.
+ *  \return the old value stored at the address.
+ */
 __device__ double atomicDoubleAdd(double* address, double val) {
     unsigned long long int* address_as_ull =
             (unsigned long long int*)address;
@@ -37,7 +46,10 @@ __device__ double atomicDoubleAdd(double* address, double val) {
 
 
 
-// calculates the time from the given start time to now, resets the start time to now, then returns as seconds the time elapsed.
+/*! \fn long double calculateTime ()
+ *  \brief calculates the time from the given start time to now, resets the start time to now, then returns as seconds the time elapsed. will change the value of profileClock and runTime as a side effect.
+ *  \return time that has elapsed since the last time calculateTime() was called, in microseconds.
+ */
 long double calculateTime () {
     auto end = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - profileClock);
     profileClock = std::chrono::high_resolution_clock::now();
@@ -46,9 +58,13 @@ long double calculateTime () {
     return val;
 }
 
-// code for the function below was provided by this stack overflow article: https://stackoverflow.com/questions/12200486/how-to-remove-duplicates-from-unsorted-stdvector-while-keeping-the-original-or
-// by a user named Yury.
-template<typename T>
+/*! \fn size_t removeDuplicates(std::vector<T>& vec)
+ *  \brief removes the duplicates from a vector.
+ *  \author code for the function below was provided by this stack overflow article: https://stackoverflow.com/questions/12200486/how-to-remove-duplicates-from-unsorted-stdvector-while-keeping-the-original-or by a user named Yury.
+ *  \param vec an std::vector. this vector will be changed as a side effect of the function.
+ *  \return the size of the new vector.
+ */
+ template<typename T>
 size_t removeDuplicates(std::vector<T>& vec) {
     std::set<T> seen;
 
@@ -65,7 +81,13 @@ size_t removeDuplicates(std::vector<T>& vec) {
     return vec.size();
 }
 
-__global__ void distanceVectorize (double* x, int size) {
+/*! \fn __global__ void distanceVectorize (double* x, const int size)
+ *  \brief takes a matrix of doubles as a pointer, then based on index it will traverse its length, finding the distance to the index value.
+ *  \param x a matrix of doubles as a pointer. will be changed as a side effect.
+ *  \param size the size of a slice of the matrix.
+ *  \return void, but will change x as a side effect.
+ */
+__global__ void distanceVectorize (double* x, const int size) {
     unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
     if (i < size) {
         // distance vector
@@ -77,8 +99,16 @@ __global__ void distanceVectorize (double* x, int size) {
     }
 }
 
-
-__global__ void gpukNN (double* x, int size, int k, double* testResult, double weight) {
+/*! \fn __global__ void gpukNN (double* x, const int size, const int k, double* kernelResult, const double weight)
+ *  \brief calculates the kth nearest neighbor of a given array inside of a flattened matrix.
+ *  \param x a flattened matrix of doubles, as a pointer.
+ *  \param size size of an array inside the matrix x.
+ *  \param k the kth value to grab.
+ *  \param kernelResult the global memory location to write the result into.
+ *  \param weight the weight used to determine the influence of the calculated Information Energy.
+ *  \return void
+ */
+__global__ void gpukNN (double* x, const int size, const int k, double* kernelResult, const double weight) {
     unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
     // block memory for reduction
     __shared__ double* blockResult;
@@ -99,19 +129,35 @@ __global__ void gpukNN (double* x, int size, int k, double* testResult, double w
 
     // reduce
     if (threadIdx.x == 0) {
-        atomicDoubleAdd(testResult, *blockResult/size * weight);
+        atomicDoubleAdd(kernelResult, *blockResult / size * weight);
         free(blockResult);
     }
 }
 
-__global__ void multiWrite (double* memoryLocation, double* values, int size) {
+/*! \fn __global__ void multiWrite (double* memoryLocation, const double* values, const int size).
+ *  \brief writes a vector into a memory location a number of times in parralel, dependant on the kernel launch size.
+ *  \param memoryLocation the space the vector is written into, as a double pointer.
+ *  \param values the vector to write into memory location.
+ *  \param size the size of the vector.
+ *  \return void, but memoryLocation will be changed as a side effect.
+ */
+__global__ void multiWrite (double* memoryLocation, const double* values, const int size) {
     unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
     if (i < size) {
         memcpy(&memoryLocation[i*size], values, sizeof(double)*size);
     }
 }
 
-void kNN (std::vector<double> x, int k, int writeLocation, double weight, double* devMatrixX, int* prevMatrixXSize) {
+/*! \fn void kNN (const std::vector<double> x, int k, const int writeLocation, const double weight, double* devMatrixX, int* prevMatrixXSize)
+ *  \brief this function sets up the GPU to perform the KNN calculation, then launches the multiWrite, distanceVectorize and gpuKNN kernels to do that calculation.
+ *  \param x an equality vector, calculated inside of threadRun().
+ *  \param k the kth nearest neighbor to grab.
+ *  \param weight the weight used to determine the influence of the calculated Information Energy.
+ *  \param devMatrixX a flattened array that is used to store x.size() amount of equality vectors. Potentially reallocated as a side effect to fit these vectors during runtime.
+ *  \param prevMatrixXSize denotes how many values devMatrixX can hold, as a pointer due to potentially needing to be changed as a side effect during runtime.
+ *  \return void
+ */
+void kNN (const std::vector<double> x, int k, const int writeLocation, const double weight, double* devMatrixX, int* prevMatrixXSize) {
     int N = x.size();
 
     if(k > N - 1) {
@@ -122,14 +168,13 @@ void kNN (std::vector<double> x, int k, int writeLocation, double weight, double
         return;
     }
 
-    // slicing into different chunks in the future maybe, if too big?
+    // To future maintainers: to reduce the burden of the heap to allocate devMatrixX on obscenely sized datasets,
+    // try slicing up the devMatrix in this function, and running in separate passes.
 
     #if PROFILE
         std::cout << std::fixed <<"\tKNN Pre-Malloc: " << calculateTime() << std::endl;
     #endif
 
-//    double* devMatrixX;
-//    cudaMalloc(&devMatrixX, sizeof(double) * N * N);
     if (*prevMatrixXSize < N*N) {
         cudaFree(devMatrixX);
         cudaMalloc(&devMatrixX, sizeof(double) * N * N);
@@ -150,22 +195,20 @@ void kNN (std::vector<double> x, int k, int writeLocation, double weight, double
 
     #if PROFILE
         std::cout << std::fixed <<"\tKNN Malloc: " << calculateTime() << std::endl;
-        std::cout << cudaGetErrorString(cudaGetLastError()) << std::endl;
     #endif
 
-    // do kNN calculation
+    //// do kNN calculation
+    // calculate the distance vectors in parallel
     distanceVectorize<<<ceil((float)N/threadsPerBlock), threadsPerBlock>>>(devMatrixX, N);
     #if PROFILE
         std::cout << std::fixed << "\tKNN kernel call: " << calculateTime() << std::endl;
-        std::cout << cudaGetErrorString(cudaGetLastError()) << std::endl;
-        cudaDeviceSynchronize();
     #endif
 
+    // sort the array then grab the kth element. these values are then reduced and written
+    // to a spot in devResult.
     gpukNN<<<ceil((float)N/threadsPerBlock), threadsPerBlock>>>(devMatrixX, N, k, &devResult[writeLocation], weight);
     #if PROFILE
         std::cout << std::fixed << "\tKNN kernel call: " << calculateTime() << std::endl;
-        std::cout << cudaGetErrorString(cudaGetLastError()) << std::endl;
-        cudaDeviceSynchronize();
     #endif
 
 
@@ -175,17 +218,32 @@ void kNN (std::vector<double> x, int k, int writeLocation, double weight, double
     #endif
 }
 
-void threadRun (int index, int k, double* data_x, int size1, double* data_y, std::vector<double>* yval) {
+/*!
+ *  \fn void threadRun (int index, int k, double* data_x, int size1, double* data_y, std::vector<double>* yval)
+ *  \brief sets up and runs kNN on a thread.
+ *  \param index the thread index, for when this application is ran multi-threaded.
+ *  \param k the kth nearest neighbor to grab.
+ *  \param data_x the first column of data.
+ *  \param size1 the number of values inside of the first column of data.
+ *  \param data_y the second column of data. data_y should *at least* be as long as data_x.
+ *  \param yval a vector of unique values found inside of data_y.
+ *  \return void
+ */
+void threadRun (const int index, int k, const double* data_x, int size1, const double* data_y, const std::vector<double>* yval) {
+    // allocate a matrix that will have our x vector copied into it many times.
+    // kNN will change this matrices size as a side-effect if it needs to be bigger during runtime.
     double* devMatrixX;
     int prevMatrixXSize = yval->size()*yval->size();
     cudaMalloc(&devMatrixX, sizeof(double)*prevMatrixXSize);
+
+    // iterate through yval, starting at a given index and skipping indices based on threadCount.
     for (int i = index; i < yval->size(); i += threadCount) {
         #if PROFILE
                 std::cout << std::fixed << "Iteration " << i << " START:" << calculateTime() << std::endl;
         #endif
 
+        //equality vector calculation
         std::vector<double> x{};
-        //equality vector
         for (int a = 0; a < size1; a++) {
             if (data_y[a] == yval->at(i)) {
                 x.push_back(data_x[a]);
@@ -201,16 +259,30 @@ void threadRun (int index, int k, double* data_x, int size1, double* data_y, std
     cudaFree(devMatrixX);
 }
 
+/*!
+ * \fn void run (double* data_x, int size1, double* data_y, int size2, int k)
+ * \brief function ran by runKernel that sets up and runs a number of threads defined by threadCount to run threadRun, then sums and prints out the answer.
+ * \param data_x the first column of data.
+ * \param size1 the amount of values inside of the first column of data.
+ * \param data_y the second column of data.
+ * \param size2 the amount of values inside of the second column of data.
+ * \param k the kth nearest neighbor to find.
+ */
 void run (double* data_x, int size1, double* data_y, int size2, int k) {
     // create the yval vector where yval is all singleton values of data_y
     std::vector<double> yval{data_y, data_y + size2};
     removeDuplicates(yval);
+    calculateTime();
+
     // 2gb max heap size
     cudaDeviceSetLimit(cudaLimitMallocHeapSize, 2147483648);
 
     cudaMalloc(&devResult, sizeof(double)*yval.size());
     cudaMemset(devResult, 0, sizeof(double)*yval.size());
 
+    // create and launch N threads, they'll each run a version of threadRun.
+    // if there are 3 threads, thread 1->3 will start on 1->3 respectively,
+    // then increment by 3 each iteration inside of threadRun().
     std::thread t[threadCount];
     for (int a = 0; a < threadCount; a++) {
         t[a] = std::thread(threadRun, a, k, data_x, size1, data_y, &yval);
@@ -218,6 +290,9 @@ void run (double* data_x, int size1, double* data_y, int size2, int k) {
     for (int a = 0; a < threadCount; a++) {
         t[a].join();
     }
+
+    // create the result array that will be summed up. each run of kNN will write into this buffer
+    // to avoid having to memcpy each iteration, so it is retrieved here.
     double* resultArr = (double*)malloc(sizeof(double) * yval.size());
     cudaMemcpy(resultArr, devResult, sizeof(double)*yval.size(), cudaMemcpyDeviceToHost);
     cudaFree(devResult);

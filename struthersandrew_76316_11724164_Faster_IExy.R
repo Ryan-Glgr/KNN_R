@@ -5,8 +5,8 @@ library("data.table")
 
 Data <- fread("data.csv", skip = 2)
 
-test1 <- (Data$MATHEFF)[1:100000]
-test2 <- (Data$MATINTFC)[1:100000]
+test1 <- (Data$MATHEFF)[1:50000]
+test2 <- (Data$MATINTFC)[1:50000]
 
 size <- length(test2)
 k_values <- seq(5000, 20000, 2500)
@@ -27,6 +27,12 @@ rv<-.C("runKernel",
 
 dyn.unload(pathToDll)
 
+
+
+
+#library("CWUKNN")
+#KNN(test1, test2, 5000, "cuda")
+#.libPaths()
 
 
 #Source C++ code
