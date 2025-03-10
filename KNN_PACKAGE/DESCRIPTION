@@ -7,5 +7,7 @@ Maintainer: Ryan Gallagher <rygall75@gmail.com>
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
-Imports:
+Imports: 
+    Rcpp
+LinkingTo: 
     Rcpp

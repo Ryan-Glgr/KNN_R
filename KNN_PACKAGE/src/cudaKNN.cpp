@@ -1,11 +1,13 @@
 #ifdef USE_CUDA
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include <set>
 #include <chrono>
 #include <thread>
 #include <cuda.h>
 #include "library.h"
+#include <Rcpp.h>
 #pragma message("COMPILING CUDA!\n")
 
 // Global settings and profiling variables
@@ -17,8 +19,7 @@ long double runTime = 0;
 
 // Helper function for profiling
 long double calculateTime () {
-    auto end = std::chrono::duration_cast<std::chrono::microseconds>(
-                    std::chrono::high_resolution_clock::now() - profileClock);
+    auto end = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - profileClock);
     profileClock = std::chrono::high_resolution_clock::now();
     long double val = (long double)end.count()/1000000.0;
     runTime += val;
@@ -50,7 +51,6 @@ CUmodule loadModule(const char* ptxFile) {
     }
     return module;
 }
-
 // Retrieve a function from the loaded module
 CUfunction getKernelFunction(CUmodule module, const char* kernelName) {
     CUfunction func;
@@ -144,10 +144,23 @@ void run(double* data_x, int size1, double* data_y, int size2, int k) {
     cuMemAlloc(&devResult, sizeof(double) * yval.size());
     cuMemsetD32(devResult, 0, yval.size());
 
-    // Create module from the compiled PTX file
-    CUmodule module = loadModule("cudaKernels.ptx");
+    // Create module from the compiled PTX file. this way we can load in our .ptx dynamically at runtime. this allows cross platform much easier.
+    // have to use a built in Rcpp function because R moves things around in your directories when you are installing packages. 
+    Rcpp::Function sysFile("system.file");
+    std::string kernelsPath = Rcpp::as<std::string>(
+        sysFile("kernels", "cudaKernels.ptx", Rcpp::Named("package") = "CWUKNN")
+    );
+    std::ifstream kernelFile(kernelsPath);
+    // Error value if there is failure opening the kernel
+    if (!kernelFile.is_open()) {
+        Rcpp::Rcerr << "Failed to open kernel file cudaKernels.ptx!" << std::endl;
+        return;
+    }
+    std::string kernelFileName = kernelsPath;
+    CUmodule module = loadModule(kernelFileName.c_str());
 
-    // Allocate a matrix for kNN calculations (initial size based on yval)
+
+    // Allocate a matrix for kNN calculations
     int prevMatrixXSize = yval.size() * yval.size();
     CUdeviceptr devMatrixX;
     cuMemAlloc(&devMatrixX, sizeof(double) * prevMatrixXSize);
@@ -189,7 +202,7 @@ void run(double* data_x, int size1, double* data_y, int size2, int k) {
 
 // This is the externally visible function that wraps run().
 // It is declared extern "C" so it can be linked elsewhere.
-extern "C" double cudaKNN(double* vec1, int size1, double* vec2, int size2, int K){
+double cudaKNN(double* vec1, int size1, double* vec2, int size2, int K){
     // Initialize the CUDA Driver API and create a context.
     cuInit(0);
     CUcontext context;

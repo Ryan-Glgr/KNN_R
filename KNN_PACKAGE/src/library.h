@@ -16,7 +16,6 @@ inline double cudaKNN(double* vec1, int size1, double* vec2, int size2, int K) {
 
 // OpenCL version
 #ifdef USE_OPENCL
-#pragma message("library.h: Compiling with USE_OPENCL!")
 extern double openCL(Rcpp::NumericVector data_x, Rcpp::NumericVector data_y, int K, const std::string &type);
 #else
 #pragma message("library.h: Compiling WITHOUT USE_OPENCL!")
@@ -25,7 +24,7 @@ inline double openCL(Rcpp::NumericVector data_x, Rcpp::NumericVector data_y, int
 }
 #endif
 
-// Pure C++ implementation declaration.
+// Pure C++ implementation declaration. not conditional since it's the default.
 extern float IE_xy(Rcpp::NumericVector data_x, Rcpp::NumericVector data_y, int k);
 
 #endif

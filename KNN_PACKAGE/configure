@@ -1,0 +1,3 @@
+#!/bin/bash
+# Call the R script in tools/
+"${R_HOME}/bin/Rscript" "tools/Rconfig.R"

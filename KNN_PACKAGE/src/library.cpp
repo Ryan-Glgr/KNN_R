@@ -1,6 +1,6 @@
 #include "library.h"
 // KNN function is what is available through R, this takes two vectors and a K.
-// additionally, allow users to choose float or double precision, and allow them to choose an implementation.
+// allows users to choose float or double precision, and allow them to choose an implementation.
 
 // [[Rcpp::export]]
 double KNN(Rcpp::NumericVector data_x, Rcpp::NumericVector data_y, int K, const std::string &precision = "float", const std::string &mode = "cpp") {
