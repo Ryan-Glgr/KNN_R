@@ -4,7 +4,7 @@
 
 // [[Rcpp::export]]
 double KNN(Rcpp::NumericVector data_x, Rcpp::NumericVector data_y, int K, const std::string &precision = "float", const std::string &mode = "cpp") {
-
+    
     // cuda computation.
     if (mode == "cuda" || mode == "CUDA")
         return cudaKNN(data_x.begin(), data_x.size(), data_y.begin(), data_y.size(), K);

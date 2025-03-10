@@ -1,1 +1,1 @@
-"${R_HOME}/bin/Rscript" "tools/Rconfig.R"
+"${R_HOME}/bin/Rscript" "tools/WindowsConfig.R"

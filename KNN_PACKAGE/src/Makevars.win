@@ -1,3 +1,0 @@
-PKG_CPPFLAGS =  -DUSE_CUDA
-PKG_CXXFLAGS =  
-PKG_LIBS =  -lcudart

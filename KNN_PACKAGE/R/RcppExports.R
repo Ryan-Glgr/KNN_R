@@ -4,4 +4,3 @@
 KNN <- function(data_x, data_y, K, precision = "float", mode = "cpp") {
     .Call(`_CWUKNN_KNN`, data_x, data_y, K, precision, mode)
 }
-
