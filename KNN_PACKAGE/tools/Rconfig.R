@@ -20,31 +20,28 @@ local_cxxflags <- character()	# For compiler flags like -fopenmp or /openmp
 local_libs     <- character()	# For libraries: -l..., -L..., etc.
 local_ldflags  <- character()	# For additional linker flags if needed
 
-# ------------------------------CHECK FOR CUDA USING NVIDIA-SMI. should be available on almost any CUDA machine. even without paths set up properly. ------------------
+# ------------------------------CHECK FOR CUDA USING NVIDIA-SMI. ------------------
 nvidia_smi <- Sys.which("nvidia-smi")
 if (nvidia_smi != "") {
 	# run the nvidia-smi command to see if we have an nvidia card.
-	# GPU version of running a command like "top".
 	out <- system2(nvidia_smi, args = "--query-gpu=name --format=csv,noheader", stdout = TRUE, stderr = TRUE)
 	# if we get any output from that.
 	if (length(out) > 0 && any(nzchar(out))) {
-		# if we got valid output from that, we are going to set this USE_CUDA flag for compilation time.
+		# set USE_CUDA flag for compilation time.
 		message("Detected NVIDIA GPU(s):")
 		local_cppflags <- c(local_cppflags, "-DUSE_CUDA")
-		# if we are on windows, use the windows pathing for the includes. This is because we can't just use NVCC, a user may not have NVCC
-		# but we are requiring a C++ compiler at least, so this will work.
+		# On Windows, use Windows-style pathing for the includes.
 		if (.Platform$OS.type == "windows") {
-			# On Windows, check for CUDA_PATH
+			# Check for CUDA_PATH
 			CUDA_PATH <- Sys.getenv("CUDA_PATH")
 			if (nzchar(CUDA_PATH)) {
 				message("CUDA_PATH detected: ", CUDA_PATH)
-				local_cppflags <- c(local_cppflags, paste0("-I", file.path(CUDA_PATH, "include")))
-				# Note: Windows compilers often prefer /LIBPATH: flags.
-				local_libs <- c(local_libs, paste0("/LIBPATH:", file.path(CUDA_PATH, "lib", "x64")), "cudart", "cuda")
+				local_cppflags <- c(local_cppflags, paste0("-I'", file.path(CUDA_PATH, "include"), "'"))
+				# Windows compilers often prefer /LIBPATH: flags.
+				local_libs <- c(local_libs, paste0("/LIBPATH:'", file.path(CUDA_PATH, "lib", "x64"), "'"), "cudart", "cuda")
 			} else {
 				warning("CUDA detected but CUDA_PATH not set on Windows!")
 			}
-		# if we are on mac/linux, we use these paths and includes.
 		} else {
 			# Unix/Linux default paths
 			CUDA_HOME <- Sys.getenv("CUDA_HOME")
@@ -57,14 +54,13 @@ if (nvidia_smi != "") {
 			} else {
 				warning("CUDA detected but CUDA include directory not found!")
 			}
-			# link the cuda libraries for the compiler as well
+			# Link the CUDA libraries for the compiler.
 			if (nzchar(CUDA_HOME) && dir.exists(file.path(CUDA_HOME, "lib64"))) {
 				local_libs <- c(local_libs, paste0("-L", file.path(CUDA_HOME, "lib64")), "-lcudart", "-lcuda")
 			} else if (file.exists("/usr/local/cuda/lib64")) {
 				local_libs <- c(local_libs, "-L/usr/local/cuda/lib64", "-lcudart", "-lcuda")
 			}
 		}
-	# we weren't able to really find NVIDIA GPUs, or Cuda machine not set up properly.
 	} else {
 		message("nvidia-smi ran but didn't report any GPUs.")
 	}
@@ -77,39 +73,44 @@ OPENCL_HOME <- Sys.getenv("OPENCL_HOME")
 has_opencl <- (nzchar(OPENCL_HOME) || nzchar(Sys.which("clinfo")))
 if (has_opencl) {
 	cat("OpenCL support detected.\n")
-	# if we did find openCL, set the USE_OPENCL flag so that we compile with that implementation
+	# Set the USE_OPENCL flag.
 	local_cppflags <- c(local_cppflags, "-DUSE_OPENCL")
-	# if it is on path, we can just use these includes and libraries
+	# If OPENCL_HOME is set, use its include and lib directories.
 	if (nzchar(OPENCL_HOME)) {
 		local_cppflags <- c(local_cppflags, paste0("-I", file.path(OPENCL_HOME, "include")))
 		local_libs     <- c(local_libs, paste0("-L", file.path(OPENCL_HOME, "lib")))
 	}
+	# in all our windows checking, we have to put single quotes around the paths, so that we don't get the paths broken up into different args
 	if (.Platform$OS.type == "windows") {
-		# if it wasn't on path we have to do some work
+
+		# If OPENCL_HOME isn't set, check for default installations.
 		if (!nzchar(OPENCL_HOME)) {
-			# Check for NVIDIA's default OpenCL installation
 			default_nvidia_opencl_path <- "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v10.1"
-			# Check for AMD's default OpenCL installation (AMD APP SDK)
 			default_amd_opencl_path <- "C:/Program Files (x86)/AMD APP SDK/3.0"
+
+            # if we have openCL on default nvidia path use it.
 			if (file.exists(file.path(default_nvidia_opencl_path, "include", "CL", "cl.h"))) {
 				message("Using default NVIDIA OpenCL include path on Windows: ", file.path(default_nvidia_opencl_path, "include"))
-				# put our include paths into the flags
-				local_cppflags <- c(local_cppflags, paste0("-I", file.path(default_nvidia_opencl_path, "include")))
-				local_libs <- c(local_libs, paste0("/LIBPATH:", file.path(default_nvidia_opencl_path, "lib", "x64")), "OpenCL")
+				local_cppflags <- c(local_cppflags, paste0("-I'", file.path(default_nvidia_opencl_path, "include"), "'"))
+				local_libs <- c(local_libs, paste0("/LIBPATH:'", file.path(default_nvidia_opencl_path, "lib", "x64"), "'"), "OpenCL")
+
+            # try to find the include files
 			} else if (file.exists(file.path(default_amd_opencl_path, "include", "CL", "cl.h"))) {
 				message("Using default AMD OpenCL include path on Windows: ", file.path(default_amd_opencl_path, "include"))
-				local_cppflags <- c(local_cppflags, paste0("-I", file.path(default_amd_opencl_path, "include")))
-				local_libs <- c(local_libs, paste0("/LIBPATH:", file.path(default_amd_opencl_path, "lib")), "OpenCL")
+				local_cppflags <- c(local_cppflags, paste0("-I'", file.path(default_amd_opencl_path, "include"), "'"))
+				local_libs <- c(local_libs, paste0("/LIBPATH:'", file.path(default_amd_opencl_path, "lib"), "'"), "OpenCL")
+
 			} else {
 				warning("No default OpenCL installation found on Windows. Please set OPENCL_HOME PATH variables to use this functionality!")
 			}
 		} else {
 			# If OPENCL_HOME is set, assume its Windows structure is valid.
-			local_cppflags <- c(local_cppflags, paste0("-I", file.path(OPENCL_HOME, "include")))
-			local_libs <- c(local_libs, paste0("/LIBPATH:", file.path(OPENCL_HOME, "lib")), "OpenCL")
+			# have to make sure to wrap single quotes around stuff, else it gets broken up by the linker.
+			local_cppflags <- c(local_cppflags, paste0("-I'", file.path(OPENCL_HOME, "include"), "'"))
+			local_libs <- c(local_libs, paste0("/LIBPATH:'", file.path(OPENCL_HOME, "lib"), "'"), "OpenCL")
 		}
-	# if we are not on windows, life is easy.
 	} else {
+		# Non-Windows: use framework linking on macOS, standard linking on others.
 		if (Sys.info()["sysname"] == "Darwin") {
 			local_libs <- c(local_libs, "-framework OpenCL")
 		} else {
@@ -118,15 +119,14 @@ if (has_opencl) {
 	}
 }
 
-# Write a temporary test file. This is like using a try catch to try and include the omp.h header and see if it works.
-# if it works, we can just include that header, if not, we won't
+# Write a temporary test file to try including omp.h.
 test_file <- tempfile(fileext = ".c")
 writeLines(c("#include <omp.h>", "int main() { return 0; }"), con = test_file)
 
 # Try to compile the test file.
 compile_result <- system(paste("R CMD SHLIB", test_file), intern = TRUE)
 
-# Check for a successful compilation by verifying the existence of the compiled shared object.
+# Check for successful compilation by verifying the compiled shared object.
 compiled_so <- sub("\\.c$", .Platform$dynlib.ext, test_file)
 if (file.exists(compiled_so)) {
 	cat("OpenMP header found, enabling OpenMP flags.\n")
@@ -134,7 +134,7 @@ if (file.exists(compiled_so)) {
 	if (.Platform$OS.type == "windows") {
 		local_cxxflags <- c(local_cxxflags, "/openmp")
 	} else if (Sys.info()["sysname"] == "Darwin") {
-		# On macOS with Clang, we typically need these flags.
+		# On macOS with Clang, use these flags.
 		local_cxxflags <- c(local_cxxflags, "-Xpreprocessor", "-fopenmp")
 		local_ldflags  <- c(local_ldflags, "-lomp")
 	} else {
@@ -154,12 +154,12 @@ default_cpp <- Sys.getenv("SHLIB_CPPFLAGS")
 default_cxx <- Sys.getenv("SHLIB_CXXFLAGS")
 default_libs <- Sys.getenv("SHLIB_LIBS")
 
-# Build the final flag strings by concatenating the defaults with our local flags.
+# Build the final flag strings by concatenating defaults with local flags.
 final_cpp <- paste(default_cpp, paste(local_cppflags, collapse = " "))
 final_cxx <- paste(default_cxx, paste(local_cxxflags, collapse = " "))
 final_libs <- paste(default_libs, paste(c(local_ldflags, local_libs), collapse = " "))
 
-# Write the Makevars file with the appropriate flags and NVCC rules.
+# Write the Makevars file with the appropriate flags.
 lines <- c(
 	paste("PKG_CPPFLAGS =", final_cpp),
 	paste("PKG_CXXFLAGS =", final_cxx),
