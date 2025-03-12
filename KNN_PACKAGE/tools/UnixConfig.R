@@ -29,7 +29,7 @@ if (nzchar(nvcc)) {
   
   # Compile the CUDA file "src/run.cu" to generate "src/run.o".
   # very important that you use this -fPIC option, otherwise it will not make position indepedent code. which you need in a shared library. 
-  system2(nvcc, args = c(run_cu,"-arch=sm_50", "-c", "-o", run_obj, "-Xcompiler", "-fPIC"), stdout = TRUE, stderr = TRUE)
+  system2(nvcc, args = c(run_cu, "-c", "-o", run_obj, "-Xcompiler", "-fPIC"), stdout = TRUE, stderr = TRUE)
   
   if (file.exists(run_obj)) {
     message("Successfully compiled cudaKNN.cu to cudaKNN.o")
@@ -47,12 +47,12 @@ if (nzchar(nvcc)) {
 OPENCL_HOME <- Sys.getenv("OPENCL_HOME")
 is_darwin <- Sys.info()["sysname"] == "Darwin" # if we are on mac, it should be supported as a framework.
 
-# For macOS, if OPENCL_HOME is not set, we assume the system's OpenCL framework is available.
+# For macOS, if OPENCL_HOME is not set, we assume the system's OpenCL framework is available anyways.
 if (!nzchar(OPENCL_HOME) && is_darwin) {
   message("OPENCL_HOME not set, but on macOS. Using system OpenCL framework.")
   has_opencl <- TRUE
 } else {
-  has_opencl <- (nzchar(OPENCL_HOME) || nzchar(Sys.which("clinfo")))
+  has_opencl <- (nzchar(OPENCL_HOME))
 }
 
 if (has_opencl) {
@@ -100,7 +100,7 @@ if (file.exists(compiled_so)) {
   file.remove(compiled_so)
 
 } else {
-  cat("omp.h not found, skipping OpenMP.\n")
+  cat("omp.h not found, skipping OpenMP support.\n")
 }
 # removing another temp file
 file.remove(test_file)
