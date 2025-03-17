@@ -77,7 +77,7 @@ cat("ANDREW elapsed time:", t_cpu["elapsed"],   " seconds\n\n")
 # Timed GPU (OpenCL) computation
 # -------------------------------------------------------------------
 cat("--- CPP Version Timing ---\n")
-cwuknnCPP <- system.time({
+cwuknn_CPP <- system.time({
   result_gpu_CPP <- compute_IE_Ryan_CPP(x_sub, y_sub, k_values)
 })
 
@@ -88,7 +88,7 @@ cat("System time: ", cwuknn_CPP["sys.self"], " seconds\n")
 cat("Elapsed time:", cwuknn_CPP["elapsed"],   " seconds\n\n")
 
 cat("--- CUDA Version Timing ---\n")
-cwuknnCUDA <- system.time({
+cwuknn_CUDA <- system.time({
   result_gpu_CUDA <- compute_IE_Ryan_CUDA(x_sub, y_sub, k_values)
 })
 
@@ -99,7 +99,7 @@ cat("System time: ", cwuknn_CUDA["sys.self"], " seconds\n")
 cat("Elapsed time:", cwuknn_CUDA["elapsed"],   " seconds\n\n")
 
 cat("--- OPENCL Version Timing ---\n")
-cwuknnOPENCL <- system.time({
+cwuknn_OPENCL <- system.time({
   result_gpu_OPENCL <- compute_IE_Ryan_OPENCL(x_sub, y_sub, k_values)
 })
 
