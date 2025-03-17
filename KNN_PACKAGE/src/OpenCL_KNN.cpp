@@ -31,12 +31,8 @@ double launchKernel(Rcpp::NumericVector data_x, Rcpp::NumericVector data_y, int 
 
     // 2) Create context & command queue
     cl_context context = clCreateContext(NULL, 1, &device, NULL, NULL, &err);
-    // Creates empty properties
-    cl_queue_properties properties[] = {
-        0
-    };
 
-    cl_command_queue queue = clCreateCommandQueueWithProperties(context, device, properties, &err);
+    cl_command_queue queue = clCreateCommandQueue(context, device, 0, &err);
 
     //----------------------------------------------------
     // 3) Build Programs and Create Kernels: These will be used to run the OpenCL code.
