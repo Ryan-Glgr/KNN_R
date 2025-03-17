@@ -21,6 +21,6 @@ extern "C" {
     // This is the function you want to dynamically load:
     CUDA_DLL_EXPORT
     double cudaKNN(double* vec1, int size1, double* vec2, int size2, int k) {
-        return run(vec1, size1, vec2, size2, k);
+        return run (vec1, size1, vec2, size2, k);
     }
 } // end extern "C"
