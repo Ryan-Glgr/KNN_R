@@ -26,7 +26,7 @@ if (nzchar(nvcc)) {
   message("Found NVCC at: ", nvcc)
 
   # Compile the CUDA file into a shared library (.dll).
-  system2(nvcc, args = c(shQuote(run_cu), "-shared", "-o", shQuote(run_dll), "-lcudart"),
+  system2(nvcc, args = c(shQuote(run_cu), "-shared", "-std=c++14", "-o", shQuote(run_dll), "-lcudart", "-O3"),
           stdout = TRUE, stderr = TRUE)
 
   # if we find the .dll we can use the -DUSE_CUDA flag, which changes our implementation to load the cuda
@@ -44,7 +44,6 @@ if (nzchar(nvcc)) {
 ## --- OpenCL Check ---
 OPENCL_HOME <- Sys.getenv("OPENCL_HOME")
 has_opencl <- nzchar(OPENCL_HOME)
-
 if (has_opencl) {
   cat("OpenCL support detected.\n")
 
@@ -83,7 +82,7 @@ writeLines(test_code, test_file)
 compiled_so <- sub("\\.c$", .Platform$dynlib.ext, test_file)
 
 # Attempt to compile + link with OpenMP
-compile_cmd <- paste("R CMD SHLIB", shQuote(test_file), "-fopenmp -fopenmp")
+compile_cmd <- paste("R CMD SHLIB", shQuote(test_file), "-fopenmp")
 message("Trying to compile and link OpenMP test program on Windows:")
 message(compile_cmd)
 

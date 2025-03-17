@@ -25,7 +25,7 @@ if (nzchar(nvcc)) {
   message("Found NVCC at: ", nvcc)
 
   # IMPORTANT FLAGS! -shared flag creates a shared library and -fPIC makes it position independent.
-  system2(nvcc, args = c(run_cu, "-shared", "-o", run_so, "-Xcompiler", "-fPIC", "-lcudart"),
+  system2(nvcc, args = c(run_cu, "-shared", "-std=c++14", "-o", run_so, "-Xcompiler", "-fPIC", "-lcudart", "-O3"),
           stdout = TRUE, stderr = TRUE)
 
   if (file.exists(run_so)) {
