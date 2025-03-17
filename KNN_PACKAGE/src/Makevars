@@ -1,3 +1,0 @@
-PKG_CPPFLAGS =  -DUSE_OPENCL
-PKG_CXXFLAGS =  
-PKG_LIBS =  -framework OpenCL
