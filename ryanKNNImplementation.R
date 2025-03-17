@@ -37,8 +37,8 @@ compute_IE_Cpp <- function(x, y, ks) {
 }
 
 # OpenCL approach using launchKernel for a vector of k
-compute_IE_Ryan <- function(x, y, ks, precision="float", mode="openCL") {
-  sapply(ks, function(k) KNN(x, y, k, precision, mode))
+compute_IE_Ryan <- function(x, y, ks, mode="openCL", precision="float") {
+  sapply(ks, function(k) KNN(x, y, k, mode, precision))
 }
 
 # -------------------------------------------------------------------

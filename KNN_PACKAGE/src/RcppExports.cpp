@@ -11,17 +11,17 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // KNN
-double KNN(Rcpp::NumericVector data_x, Rcpp::NumericVector data_y, int K, const std::string& precision, const std::string& mode);
-RcppExport SEXP _CWUKNN_KNN(SEXP data_xSEXP, SEXP data_ySEXP, SEXP KSEXP, SEXP precisionSEXP, SEXP modeSEXP) {
+double KNN(Rcpp::NumericVector data_x, Rcpp::NumericVector data_y, int K, const std::string& mode, const std::string& precision);
+RcppExport SEXP _CWUKNN_KNN(SEXP data_xSEXP, SEXP data_ySEXP, SEXP KSEXP, SEXP modeSEXP, SEXP precisionSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type data_x(data_xSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type data_y(data_ySEXP);
     Rcpp::traits::input_parameter< int >::type K(KSEXP);
-    Rcpp::traits::input_parameter< const std::string& >::type precision(precisionSEXP);
     Rcpp::traits::input_parameter< const std::string& >::type mode(modeSEXP);
-    rcpp_result_gen = Rcpp::wrap(KNN(data_x, data_y, K, precision, mode));
+    Rcpp::traits::input_parameter< const std::string& >::type precision(precisionSEXP);
+    rcpp_result_gen = Rcpp::wrap(KNN(data_x, data_y, K, mode, precision));
     return rcpp_result_gen;
 END_RCPP
 }
