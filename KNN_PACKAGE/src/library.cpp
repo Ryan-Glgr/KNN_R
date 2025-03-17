@@ -3,7 +3,7 @@
 // allows users to choose float or double precision, and allow them to choose an implementation.
 
 // [[Rcpp::export]]
-double KNN(Rcpp::NumericVector data_x, Rcpp::NumericVector data_y, int K, const std::string &precision = "float", const std::string &mode = "cpp") {
+double KNN(Rcpp::NumericVector data_x, Rcpp::NumericVector data_y, int K, const std::string &mode = "cpp",  const std::string &precision = "float") {
     
     // cuda computation.
     if (mode == "cuda" || mode == "CUDA")

@@ -17,26 +17,23 @@ local_libs     <- character()  # For libraries: -l..., -L..., etc.
 local_ldflags  <- character()  # For additional linker flags if needed
 
 # ------------------------------CHECK FOR CUDA USING NVCC. ------------------
-
-# Define paths for run.cu and run.o within the src folder.
 run_cu  <- file.path("src", "cudaKNN.cu")
-# compile it directly into src, not into the CUDA folder. makes it easier to find.
-run_obj <- file.path("src", "cudaKNN.o")
-
+# output shared object MUST go in inst, because R doesn't always take all the files from src over. so it goes in a place it must be copied by the installation process
+run_so  <- file.path("inst", "kernels", "cudaKNN.so")
 nvcc <- Sys.which("nvcc")
 if (nzchar(nvcc)) {
   message("Found NVCC at: ", nvcc)
-  
-  # Compile the CUDA file "src/run.cu" to generate "src/run.o".
-  # very important that you use this -fPIC option, otherwise it will not make position indepedent code. which you need in a shared library. 
-  system2(nvcc, args = c(run_cu, "-c", "-o", run_obj, "-Xcompiler", "-fPIC"), stdout = TRUE, stderr = TRUE)
-  
-  if (file.exists(run_obj)) {
-    message("Successfully compiled cudaKNN.cu to cudaKNN.o")
-    local_libs <- c(local_libs, "cudaKNN.o", "-lcudart")
+
+  # IMPORTANT FLAGS! -shared flag creates a shared library and -fPIC makes it position independent.
+  system2(nvcc, args = c(run_cu, "-shared", "-o", run_so, "-Xcompiler", "-fPIC", "-lcudart"),
+          stdout = TRUE, stderr = TRUE)
+
+  if (file.exists(run_so)) {
+    message("Successfully compiled cudaKNN.cu to cudaKNN.so")
+    # Instead of linking the .so in PKG_LIBS, we simply define the USE_CUDA flag.
     local_cppflags <- c(local_cppflags, "-DUSE_CUDA")
   } else {
-    warning("Compilation of cudaKNN.cu failed! 'cudaKNN.o' not found.")
+    warning("Compilation of cudaKNN.cu failed! 'cudaKNN.so' not found.")
   }
 } else {
   message("NVCC compiler not found. Continuing without CUDA support.")
@@ -75,34 +72,95 @@ if (has_opencl) {
 
 # ------------------------------CHECK FOR OpenMP SUPPORT. ------------------
 # Write a temporary test file to try including omp.h.
-test_file <- tempfile(fileext = ".c")
-writeLines(c("#include <omp.h>", "int main() { return 0; }"), con = test_file)
 
-# Try to compile the test file.
-compile_result <- system(paste("R CMD SHLIB", test_file), intern = TRUE)
+test_file <- tempfile(fileext = ".c")
+
+# we really have to use this pragma omp parallel in here so we can test if we have the right runtime libraries, not just the header file.
+test_code <- c(
+  "#include <stdio.h>",
+  "#include <omp.h>",
+  "",
+  "int main(void) {",
+  "    int sum = 0;",
+  "    // Use a parallel for loop with a reduction to confirm linking.",
+  "    #pragma omp parallel for reduction(+:sum)",
+  "    for (int i = 0; i < 100; i++) {",
+  "        sum += i;",
+  "    }",
+  "    printf(\"OpenMP test: sum=%d\\n\", sum);",
+  "    return 0;",
+  "}"
+)
+
+writeLines(test_code, test_file)
+
+# We'll name our output shared library the same way R would by default:
 compiled_so <- sub("\\.c$", .Platform$dynlib.ext, test_file)
 
+# Decide which flags to pass depending on platform.
+sysname <- Sys.info()[["sysname"]]
+if (sysname == "Darwin") {
+  # On macOS with Clang and a separate libomp.
+  # Typically you need `-Xpreprocessor -fopenmp` plus `-lomp`.
+  omp_compile_flags <- c("-Xpreprocessor", "-fopenmp")
+  omp_link_flags    <- c("-lomp")
+} else {
+  # On Linux with GCC (or possibly on Windows with MinGW).
+  # Typically you just need `-fopenmp` for both compile and link.
+  omp_compile_flags <- c("-fopenmp")
+  omp_link_flags    <- c("-fopenmp")
+}
+
+# Build a command that invokes R CMD SHLIB with our flags.
+# We'll pass them at the end, so they are appended to the compile/link invocation.
+compile_command <- paste(
+  "R CMD SHLIB",
+  shQuote(test_file),
+  paste(omp_compile_flags, collapse = " "),
+  paste(omp_link_flags, collapse = " ")
+)
+
+message("Trying to compile and link OpenMP test program:")
+message(compile_command)
+compile_result <- tryCatch(
+  {
+    # Run the command and capture output
+    system(compile_command, intern = TRUE)
+  },
+  error = function(e) {
+    # If system call failed, store the message
+    return(conditionMessage(e))
+  }
+)
+
 if (file.exists(compiled_so)) {
-  cat("OpenMP header found, enabling OpenMP flags.\n")
-  
+  cat("OpenMP compile+link test succeeded. Enabling OpenMP flags.\n")
+
+  # If successful, set the preprocessor definition.
   local_cppflags <- c(local_cppflags, "-DHAVE_OPENMP")
-  if (Sys.info()["sysname"] == "Darwin") {
-    # On macOS with Clang.
+
+  if (sysname == "Darwin") {
+    # On macOS with Clang:
     local_cxxflags <- c(local_cxxflags, "-Xpreprocessor", "-fopenmp")
+    # We'll add the link flags to local_ldflags:
     local_ldflags  <- c(local_ldflags, "-lomp")
-  
+    # If needed, you might also need -L/path/to/libomp if libomp isn't in a default location.
+    # For example:
+    # local_ldflags <- c(local_ldflags, "-L/usr/local/opt/libomp/lib", "-lomp")
   } else {
-    # On Linux with GCC.
+    # On Linux (GCC)
     local_cxxflags <- c(local_cxxflags, "-fopenmp")
     local_ldflags  <- c(local_ldflags, "-fopenmp")
   }
-  # removing temp file
-  file.remove(compiled_so)
 
+  # remove the successfully compiled test library
+  file.remove(compiled_so)
 } else {
-  cat("omp.h not found, skipping OpenMP support.\n")
+  cat("OpenMP compile+link test failed or OpenMP unavailable.\n")
+  cat("Output from compile attempt:\n")
+  print(compile_result)
 }
-# removing another temp file
+# Finally, remove the temporary source file
 file.remove(test_file)
 
 # Get default values from the environment.

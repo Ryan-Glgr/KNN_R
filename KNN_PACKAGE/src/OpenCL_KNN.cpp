@@ -1,5 +1,4 @@
 #ifdef USE_OPENCL
-#pragma message ("OpenCL detected. Compiling with OpenCL enabled!\n")
 
 #include <iostream>
 #include <fstream>
