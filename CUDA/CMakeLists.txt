@@ -7,7 +7,7 @@ set(CMAKE_CUDA_STANDARD 20)
 add_library(CudaRLibrary SHARED
         run.cu
         testCuda.cuh)
-
+##
 #add_executable(CudaRLibrary
 #        run.cu
 #        testCuda.cuh)

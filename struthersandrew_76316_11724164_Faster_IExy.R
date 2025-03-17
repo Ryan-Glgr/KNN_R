@@ -2,11 +2,10 @@
 library("Rcpp")
 library("data.table")
 
-
 Data <- fread("data.csv", skip = 2)
 
-test1 <- (Data$MATHEFF)[1:50000]
-test2 <- (Data$MATINTFC)[1:50000]
+test1 <- (Data$MATHEFF)[1:100000]
+test2 <- (Data$MATINTFC)[1:100000]
 
 size <- length(test2)
 k_values <- seq(5000, 20000, 2500)
@@ -30,9 +29,36 @@ dyn.unload(pathToDll)
 
 
 
-#library("CWUKNN")
-#KNN(test1, test2, 5000, "cuda")
+library("CWUKNN")
+system.time({
+  print("CUDA")
+  resCuda <- KNN(test1, test2, 5000, "double", "cuda")
+  print(resCuda)
+})
+system.time({
+  print("CPP")
+  resCpp <- KNN(test1, test2, 5000, "float", "cpp")
+  print(resCpp)
+})
+
+system.time({
+  print("OpenCL")
+  resCl <- KNN(test1, test2, 5000, "float", "opencl")
+  print(resCl)
+})
 #.libPaths()
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 #Source C++ code

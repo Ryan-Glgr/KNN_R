@@ -14,6 +14,9 @@
 // how many CPU threads will be ran with their own default CUDA stream.
 #define threadCount 1
 
+// heap size
+#define heapSize 2147483648
+
 auto profileClock = std::chrono::high_resolution_clock::now(); //! the clock that will help keep track of the runtime.
 long double runTime = 0; //! the runtime of this application.
 
@@ -108,8 +111,8 @@ __global__ void distanceVectorize (double* x, const int size) {
  *  \param weight the weight used to determine the influence of the calculated Information Energy.
  *  \return void
  */
-__global__ void gpukNN (double* x, const int size, const int k, double* kernelResult, const double weight) {
-    unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
+__global__ void gpukNN (unsigned int offset, double* x, const int size, const int k, double* kernelResult, const double weight) {
+    unsigned int i = threadIdx.x + blockIdx.x * blockDim.x + offset;
     // block memory for reduction
     __shared__ double* blockResult;
     if (threadIdx.x == 0) {
@@ -121,7 +124,7 @@ __global__ void gpukNN (double* x, const int size, const int k, double* kernelRe
     if (i < size) {
         int pos = i * size;
         //sort
-        thrust::sort(thrust::seq, &x[pos], &x[pos+size]);
+        thrust::sort(thrust::cuda::par.on(0), &x[pos], &x[pos+size]);
         //
         atomicDoubleAdd(blockResult, (k / (size * 2 * x[pos+k])));
     }
@@ -173,6 +176,7 @@ void kNN (const std::vector<double> x, int k, const int writeLocation, const dou
 
     #if PROFILE
         std::cout << std::fixed <<"\tKNN Pre-Malloc: " << calculateTime() << std::endl;
+        std::cout << "\t\tMatrix Memory: " << N*N*sizeof(double) << std::endl;
     #endif
 
     if (*prevMatrixXSize < N*N) {
@@ -189,12 +193,11 @@ void kNN (const std::vector<double> x, int k, const int writeLocation, const dou
     #if PROFILE
         std::cout << std::fixed <<"\tKNN Memcpy: " << calculateTime() << std::endl;
     #endif
-
     // have the kernel threads call memcpy N times
     multiWrite<<<ceil((float)N/threadsPerBlock), threadsPerBlock>>>(devMatrixX, devX, N);
-
     #if PROFILE
         std::cout << std::fixed <<"\tKNN Malloc: " << calculateTime() << std::endl;
+        std::cout << cudaGetErrorString(cudaGetLastError()) << std::endl;
     #endif
 
     //// do kNN calculation
@@ -202,13 +205,22 @@ void kNN (const std::vector<double> x, int k, const int writeLocation, const dou
     distanceVectorize<<<ceil((float)N/threadsPerBlock), threadsPerBlock>>>(devMatrixX, N);
     #if PROFILE
         std::cout << std::fixed << "\tKNN kernel call: " << calculateTime() << std::endl;
+        std::cout << cudaGetErrorString(cudaGetLastError()) << std::endl;
     #endif
 
     // sort the array then grab the kth element. these values are then reduced and written
     // to a spot in devResult.
-    gpukNN<<<ceil((float)N/threadsPerBlock), threadsPerBlock>>>(devMatrixX, N, k, &devResult[writeLocation], weight);
+    int amtOfChunks = (int)ceil(((float)N*N*2)*sizeof(double) / heapSize);
+    int offset = 0;
+//    std::cout << N << "\t" << amtOfChunks << std::endl;
+    for (int a = 0; a < amtOfChunks; a++) {
+//        std::cout << "Blocks: " << ceil(((float)N/amtOfChunks)/threadsPerBlock) << std::endl;
+        gpukNN<<<ceil(((float)N/amtOfChunks)/threadsPerBlock), threadsPerBlock>>>(offset, devMatrixX, N, k, &devResult[writeLocation], weight);
+        offset += ceil(((float)N/amtOfChunks)/threadsPerBlock) * threadsPerBlock;
+    }
     #if PROFILE
         std::cout << std::fixed << "\tKNN kernel call: " << calculateTime() << std::endl;
+        std::cout << cudaGetErrorString(cudaGetLastError()) << std::endl;
     #endif
 
 
@@ -275,7 +287,7 @@ void run (double* data_x, int size1, double* data_y, int size2, int k) {
     calculateTime();
 
     // 2gb max heap size
-    cudaDeviceSetLimit(cudaLimitMallocHeapSize, 2147483648);
+    cudaDeviceSetLimit(cudaLimitMallocHeapSize, heapSize);
 
     cudaMalloc(&devResult, sizeof(double)*yval.size());
     cudaMemset(devResult, 0, sizeof(double)*yval.size());
