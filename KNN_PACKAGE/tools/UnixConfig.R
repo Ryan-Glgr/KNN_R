@@ -27,8 +27,7 @@ nvcc <- Sys.which("nvcc")
 if (nzchar(nvcc)) {
   message("Found NVCC at: ", nvcc)
   
-  # Compile the CUDA file "src/run.cu" to generate "src/run.o".
-  # very important that you use this -fPIC option, otherwise it will not make position indepedent code. which you need in a shared library. 
+  # very important that you use this -fPIC option, otherwise it will not make position indepedent code. which you need in a shared library.
   system2(nvcc, args = c(run_cu, "-c", "-o", run_obj, "-Xcompiler", "-fPIC"), stdout = TRUE, stderr = TRUE)
   
   if (file.exists(run_obj)) {

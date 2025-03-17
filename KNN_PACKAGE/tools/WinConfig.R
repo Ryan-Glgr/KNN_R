@@ -22,10 +22,10 @@ run_cu  <- file.path("src", "cudaKNN.cu")
 run_obj <- file.path("src", "cudaKNN.obj")  # Windows uses .obj for object files
 nvcc <- Sys.which("nvcc")
 if (nzchar(nvcc)) {
-  message("Found NVCC at: ", nvcc)
+  message("Windows User: Found NVCC at: ", nvcc)
   
   # Compile the CUDA file.
-  system2(nvcc, args = c(shQuote(run_cu), "-c", "-o", shQuote(run_obj)), stdout = TRUE, stderr = TRUE)
+  system2(nvcc, args = c(shQuote(run_cu), "-c", "-Xcompiler", "-o", shQuote(run_obj)), stdout = TRUE, stderr = TRUE)
   
   if (file.exists(run_obj)) {
     message("Successfully compiled cudaKNN.cu to cudaKNN.obj")
@@ -34,16 +34,14 @@ if (nzchar(nvcc)) {
     cuda_home <- Sys.getenv("CUDA_HOME")
     if (nzchar(cuda_home)) {
 
-      # Add the CUDA preprocessor flag.
-      local_cppflags <- c(local_cppflags, "-DUSE_CUDA")
-      
-      # Add include and lib paths.
-      local_cppflags <- c(local_cppflags, paste0("-I", shQuote(file.path(cuda_home, "include"))))
-      local_libs <- c(local_libs, paste0("-L", shQuote(file.path(cuda_home, "lib", "x64"))))
-      local_libs <- c(local_libs, "-lcudart")
-
+      # Add include and lib paths (1).
+      local_cppflags <- c(local_cppflags, paste0("-I", shQuote(normalizePath(file.path(cuda_home, "include"), winslash = "/"))))
       # Add the compiled CUDA object.
       local_libs <- c(local_libs, "cudaKNN.obj")
+      # Add include and lib paths (2).
+      local_libs <- c(local_libs, paste0("-L", shQuote(normalizePath(file.path(cuda_home, "lib", "x64"), winslash = "/"))))
+      local_libs <- c(local_libs, "-lcudart")
+
     } else {
       message("CUDA_HOME PATH variable not set! Can not link cuda files, so no CUDA support!")
     }
@@ -66,8 +64,9 @@ if (has_opencl) {
   local_cppflags <- c(local_cppflags, "-DUSE_OPENCL")
 
   # Add include and lib paths if OPENCL_HOME is set.
-  local_cppflags <- c(local_cppflags, paste0("-I", shQuote(file.path(OPENCL_HOME, "include"))))
-  local_libs     <- c(local_libs, paste0("-L", shQuote(file.path(OPENCL_HOME, "lib"))))
+  # Add include and lib paths if OPENCL_HOME is set.
+  local_cppflags <- c(local_cppflags, paste0("-I", shQuote(normalizePath(file.path(OPENCL_HOME, "include")))))
+  local_libs     <- c(local_libs, paste0("-L", shQuote(normalizePath(file.path(OPENCL_HOME, "lib")))))
 
   # use standard linking.
   local_libs <- c(local_libs, "-lOpenCL")

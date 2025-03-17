@@ -1,3 +1,3 @@
-PKG_CPPFLAGS =  
+PKG_CPPFLAGS =  -I"C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.6/include" -DUSE_OPENCL -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.6\include"
 PKG_CXXFLAGS =  
-PKG_LIBS =  
+PKG_LIBS =  cudaKNN.obj -L"C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.6/lib/x64" -lcudart -L"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.6\lib" -lOpenCL

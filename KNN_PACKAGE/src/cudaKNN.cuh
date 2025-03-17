@@ -1,9 +1,13 @@
+#ifndef CUDA_KNN_CUH
+#define CUDA_KNN_CUH
+
 #include <vector>
 #include <algorithm>
 #include <set>
 #include <iostream>
 #include <thrust/sort.h>
 #include <thread>
+
 
 // sets if this program will be ran with naive profiling.
 #define PROFILE false
@@ -13,6 +17,8 @@
 
 // how many CPU threads will be ran with their own default CUDA stream.
 #define threadCount 1
+
+double cudaKNN(double* vec1, int size1, double* vec2, int size2, int k);
 
 double* devResult;
 
@@ -258,4 +264,5 @@ __host__ double run (double* data_x, int size1, double* data_y, int size2, int k
     free(resultArr);
 
     return result;
-}
+} 
+#endif
