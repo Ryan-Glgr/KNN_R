@@ -90,12 +90,12 @@ size_t removeDuplicates(std::vector<T>& vec) {
  *  \param size the size of a slice of the matrix.
  *  \return void, but will change x as a side effect.
  */
-__global__ void distanceVectorize (double* x, const int size) {
+__global__ void distanceVectorize (double* x, const int size, const int offset) {
     unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
-    if (i < size) {
+    if (i+offset < size) {
         // distance vector
         int pos = i * size;
-        double tempVal = x[pos+i];
+        double tempVal = x[pos+i+offset];
         for (int a = 0; a < size; a++) {
             x[pos+a] = abs(tempVal-x[pos+a]);
         }
@@ -111,8 +111,8 @@ __global__ void distanceVectorize (double* x, const int size) {
  *  \param weight the weight used to determine the influence of the calculated Information Energy.
  *  \return void
  */
-__global__ void gpukNN (unsigned int offset, double* x, const int size, const int k, double* kernelResult, const double weight) {
-    unsigned int i = threadIdx.x + blockIdx.x * blockDim.x + offset;
+__global__ void gpukNN (double* x, const int size, const int k, double* kernelResult, const double weight, const int ind) {
+    unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
     // block memory for reduction
     __shared__ double* blockResult;
     if (threadIdx.x == 0) {
@@ -121,12 +121,12 @@ __global__ void gpukNN (unsigned int offset, double* x, const int size, const in
     }
 
     // knn calculation
-    if (i < size) {
+    if (i < size && ind+i < size) {
         int pos = i * size;
         //sort
-        thrust::sort(thrust::cuda::par.on(0), &x[pos], &x[pos+size]);
+        thrust::sort(thrust::cuda::par.on(0), &x[pos], &x[pos + size]);
         //
-        atomicDoubleAdd(blockResult, (k / (size * 2 * x[pos+k])));
+        atomicDoubleAdd(blockResult, (k / (size * 2 * x[pos + k])));
     }
     __syncthreads();
 
@@ -144,9 +144,9 @@ __global__ void gpukNN (unsigned int offset, double* x, const int size, const in
  *  \param size the size of the vector.
  *  \return void, but memoryLocation will be changed as a side effect.
  */
-__global__ void multiWrite (double* memoryLocation, const double* values, const int size) {
+__global__ void multiWrite (double* memoryLocation, const double* values, const int size, const int offset) {
     unsigned int i = threadIdx.x + blockIdx.x * blockDim.x;
-    if (i < size) {
+    if (i+offset < size) {
         memcpy(&memoryLocation[i*size], values, sizeof(double)*size);
     }
 }
@@ -156,11 +156,9 @@ __global__ void multiWrite (double* memoryLocation, const double* values, const 
  *  \param x an equality vector, calculated inside of threadRun().
  *  \param k the kth nearest neighbor to grab.
  *  \param weight the weight used to determine the influence of the calculated Information Energy.
- *  \param devMatrixX a flattened array that is used to store x.size() amount of equality vectors. Potentially reallocated as a side effect to fit these vectors during runtime.
- *  \param prevMatrixXSize denotes how many values devMatrixX can hold, as a pointer due to potentially needing to be changed as a side effect during runtime.
  *  \return void
  */
-void kNN (const std::vector<double> x, int k, const int writeLocation, const double weight, double* devMatrixX, int* prevMatrixXSize) {
+void kNN (const std::vector<double> x, int k, const int writeLocation, const double weight) {
     int N = x.size();
 
     if(k > N - 1) {
@@ -179,10 +177,6 @@ void kNN (const std::vector<double> x, int k, const int writeLocation, const dou
         std::cout << "\t\tMatrix Memory: " << N*N*sizeof(double) << std::endl;
     #endif
 
-    if (*prevMatrixXSize < N*N) {
-        cudaFree(devMatrixX);
-        cudaMalloc(&devMatrixX, sizeof(double) * N * N);
-    }
 
 
     // vector to copy acrossed devMatrixX
@@ -190,41 +184,37 @@ void kNN (const std::vector<double> x, int k, const int writeLocation, const dou
     cudaMalloc(&devX, sizeof(double) * N);
     cudaMemcpy(devX, x.data(), sizeof(double) * N, cudaMemcpyHostToDevice);
 
-    #if PROFILE
-        std::cout << std::fixed <<"\tKNN Memcpy: " << calculateTime() << std::endl;
-    #endif
-    // have the kernel threads call memcpy N times
-    multiWrite<<<ceil((float)N/threadsPerBlock), threadsPerBlock>>>(devMatrixX, devX, N);
-    #if PROFILE
-        std::cout << std::fixed <<"\tKNN Malloc: " << calculateTime() << std::endl;
-        std::cout << cudaGetErrorString(cudaGetLastError()) << std::endl;
-    #endif
-
-    //// do kNN calculation
-    // calculate the distance vectors in parallel
-    distanceVectorize<<<ceil((float)N/threadsPerBlock), threadsPerBlock>>>(devMatrixX, N);
-    #if PROFILE
-        std::cout << std::fixed << "\tKNN kernel call: " << calculateTime() << std::endl;
-        std::cout << cudaGetErrorString(cudaGetLastError()) << std::endl;
-    #endif
-
-    // sort the array then grab the kth element. these values are then reduced and written
-    // to a spot in devResult.
+    // how many passes we will be doing as to not blow up our heap if our N is large
     int amtOfChunks = (int)ceil(((float)N*N*2)*sizeof(double) / heapSize);
+
+    // where each iteration of the loop will start
     int offset = 0;
-//    std::cout << N << "\t" << amtOfChunks << std::endl;
+
+    // how many blocks will we be using for each iteration
+    int blocks = ceil(((float)N/amtOfChunks)/threadsPerBlock);
+
+    // create a matrix to hold our vectors on the GPU
+    double* devMatrixX;
+    cudaMalloc(&devMatrixX, sizeof(double) * blocks * threadsPerBlock * N);
+
     for (int a = 0; a < amtOfChunks; a++) {
-//        std::cout << "Blocks: " << ceil(((float)N/amtOfChunks)/threadsPerBlock) << std::endl;
-        gpukNN<<<ceil(((float)N/amtOfChunks)/threadsPerBlock), threadsPerBlock>>>(offset, devMatrixX, N, k, &devResult[writeLocation], weight);
-        offset += ceil(((float)N/amtOfChunks)/threadsPerBlock) * threadsPerBlock;
+        // write our vectors into the matrix
+        multiWrite<<<blocks, threadsPerBlock>>>(devMatrixX,devX,N,offset);
+
+        // do the distance calculation on these vectors
+        distanceVectorize<<<blocks, threadsPerBlock>>>(devMatrixX,N,offset);
+
+        // sort and get the kth value
+        gpukNN<<<blocks, threadsPerBlock>>>(devMatrixX,N,k,&devResult[writeLocation],weight,offset);
+
+        // update our offset and continue
+        offset += blocks * threadsPerBlock;
     }
-    #if PROFILE
-        std::cout << std::fixed << "\tKNN kernel call: " << calculateTime() << std::endl;
-        std::cout << cudaGetErrorString(cudaGetLastError()) << std::endl;
-    #endif
+
 
 
     cudaFree(devX);
+    cudaFree(devMatrixX);
     #if PROFILE
         std::cout << std::fixed << "\tKNN end: " << calculateTime() << std::endl;
     #endif
@@ -242,12 +232,6 @@ void kNN (const std::vector<double> x, int k, const int writeLocation, const dou
  *  \return void
  */
 void threadRun (const int index, int k, const double* data_x, int size1, const double* data_y, const std::vector<double>* yval) {
-    // allocate a matrix that will have our x vector copied into it many times.
-    // kNN will change this matrices size as a side-effect if it needs to be bigger during runtime.
-    double* devMatrixX;
-    int prevMatrixXSize = yval->size()*yval->size();
-    cudaMalloc(&devMatrixX, sizeof(double)*prevMatrixXSize);
-
     // iterate through yval, starting at a given index and skipping indices based on threadCount.
     for (int i = index; i < yval->size(); i += threadCount) {
         #if PROFILE
@@ -263,12 +247,11 @@ void threadRun (const int index, int k, const double* data_x, int size1, const d
         }
 
         // calculate the information energy
-        kNN(x, k, i, (double) x.size() / (double) size1, devMatrixX, &prevMatrixXSize);
+        kNN(x, k, i, (double) x.size() / (double) size1);
         #if PROFILE
                 std::cout << std::fixed << "Iteration " << i << " END:" << calculateTime() << std::endl;
         #endif
     }
-    cudaFree(devMatrixX);
 }
 
 /*!
