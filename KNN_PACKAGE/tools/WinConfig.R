@@ -52,8 +52,8 @@ if (has_opencl) {
   local_cppflags <- c(local_cppflags, "-DUSE_OPENCL")
 
   # Add include and lib paths if OPENCL_HOME is set.
-  local_cppflags <- c(local_cppflags, paste0("-I", shQuote(file.path(OPENCL_HOME, "include"))))
-  local_libs     <- c(local_libs, paste0("-L", shQuote(file.path(OPENCL_HOME, "lib"))))
+  local_cppflags <- c(local_cppflags, paste0("-I", shQuote(normalizePath(file.path(OPENCL_HOME, "include"), winslash = "/"))))
+  local_libs     <- c(local_libs, paste0("-L", shQuote(normalizePath(file.path(OPENCL_HOME, "lib", "x64"), winslash = "/"))))
 
   # use standard linking.
   local_libs <- c(local_libs, "-lOpenCL")
@@ -83,7 +83,7 @@ writeLines(test_code, test_file)
 compiled_so <- sub("\\.c$", .Platform$dynlib.ext, test_file)
 
 # Attempt to compile + link with OpenMP
-compile_cmd <- paste("R CMD SHLIB", shQuote(test_file), "-fopenmp -fopenmp")
+compile_cmd <- paste("R CMD SHLIB", shQuote(test_file), "-fopenmp")
 message("Trying to compile and link OpenMP test program on Windows:")
 message(compile_cmd)
 
