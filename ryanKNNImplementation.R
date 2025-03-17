@@ -36,10 +36,21 @@ compute_IE_Cpp <- function(x, y, ks) {
  sapply(ks, function(k) IE_xy(x, y, k))
 }
 
-# OpenCL approach using launchKernel for a vector of k
-compute_IE_Ryan <- function(x, y, ks, mode="openCL", precision="float") {
+# Our CPP approach using launchKernel for a vector of k
+compute_IE_Ryan_CPP <- function(x, y, ks, mode="", precision="float") {
   sapply(ks, function(k) KNN(x, y, k, mode, precision))
 }
+
+# Our CUDA approach using launchKernel for a vector of k
+compute_IE_Ryan_CUDA <- function(x, y, ks, mode="cuda", precision="float") {
+  sapply(ks, function(k) KNN(x, y, k, mode, precision))
+}
+
+# Our OPENCL approach using launchKernel for a vector of k
+compute_IE_Ryan_OPENCL <- function(x, y, ks, mode="openCL", precision="float") {
+  sapply(ks, function(k) KNN(x, y, k, mode, precision))
+}
+
 
 # -------------------------------------------------------------------
 # Define k values and subset data as needed
@@ -65,15 +76,37 @@ cat("ANDREW elapsed time:", t_cpu["elapsed"],   " seconds\n\n")
 # -------------------------------------------------------------------
 # Timed GPU (OpenCL) computation
 # -------------------------------------------------------------------
-cat("--- OUR Version Timing - Float ---\n")
-cwuknn <- system.time({
-  result_gpu <- compute_IE_Ryan(x_sub, y_sub, k_values)
+cat("--- CPP Version Timing ---\n")
+cwuknnCPP <- system.time({
+  result_gpu_CPP <- compute_IE_Ryan_CPP(x_sub, y_sub, k_values)
 })
 
-cat("Our version results:\n")
-print(result_gpu)
-cat("Our user time:   ", cwuknn["user.self"], " seconds\n")
-cat("Our system time: ", cwuknn["sys.self"], " seconds\n")
-cat("Our elapsed time:", cwuknn["elapsed"],   " seconds\n\n")
+cat("CPP version results:\n")
+print(result_gpu_CPP)
+cat("User time:   ", cwuknn_CPP["user.self"], " seconds\n")
+cat("System time: ", cwuknn_CPP["sys.self"], " seconds\n")
+cat("Elapsed time:", cwuknn_CPP["elapsed"],   " seconds\n\n")
+
+cat("--- CUDA Version Timing ---\n")
+cwuknnCUDA <- system.time({
+  result_gpu_CUDA <- compute_IE_Ryan_CUDA(x_sub, y_sub, k_values)
+})
+
+cat("CUDA version results:\n")
+print(result_gpu_CUDA)
+cat("User time:   ", cwuknn_CUDA["user.self"], " seconds\n")
+cat("System time: ", cwuknn_CUDA["sys.self"], " seconds\n")
+cat("Elapsed time:", cwuknn_CUDA["elapsed"],   " seconds\n\n")
+
+cat("--- OPENCL Version Timing ---\n")
+cwuknnOPENCL <- system.time({
+  result_gpu_OPENCL <- compute_IE_Ryan_OPENCL(x_sub, y_sub, k_values)
+})
+
+cat("OPENCL version results:\n")
+print(result_gpu_OPENCL)
+cat("User time:   ", cwuknn_OPENCL["user.self"], " seconds\n")
+cat("System time: ", cwuknn_OPENCL["sys.self"], " seconds\n")
+cat("Elapsed time:", cwuknn_OPENCL["elapsed"],   " seconds\n\n")
 
 cat("All done.\n")
