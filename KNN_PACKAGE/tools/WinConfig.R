@@ -16,7 +16,6 @@ local_cxxflags <- character()  # For compiler flags like -fopenmp
 local_libs     <- character()  # For libraries: -l..., -L..., etc.
 local_ldflags  <- character()  # For additional linker flags if needed
 # ------------------------------CHECK FOR CUDA USING NVCC. ------------------
-
 # Define paths for cudaKNN.cu and the output DLL in the inst/kernels folder.
 run_cu  <- file.path("src", "cudaKNN.cu")
 run_dll <- file.path("inst", "kernels", "cudaKNN.dll")
@@ -26,7 +25,7 @@ if (nzchar(nvcc)) {
   message("Found NVCC at: ", nvcc)
 
   # Compile the CUDA file into a shared library (.dll).
-  system2(nvcc, args = c(shQuote(run_cu), "-shared", "-std=c++14", "-o", shQuote(run_dll), "-lcudart", "-O3"),
+  system2(nvcc, args = c(shQuote(run_cu), "-shared", "-rdc=true", "-arch=sm_50", "-std=c++14", "-o", shQuote(run_dll), "-lcudart", "-O3"),
           stdout = TRUE, stderr = TRUE)
 
   # if we find the .dll we can use the -DUSE_CUDA flag, which changes our implementation to load the cuda

@@ -3,6 +3,7 @@
 #include <set>
 #include <iostream>
 #include <thrust/sort.h>
+#include <thread>
 
 // sets if this program will be ran with naive profiling.
 #define PROFILE false
@@ -107,7 +108,7 @@ __global__ void gpukNN (double* x, const int size, const int k, double* kernelRe
     if (i < size && ind+i < size) {
         int pos = i * size;
         //sort
-        thrust::sort(thrust::cuda::par.on(0), &x[pos], &x[pos + size]);
+        thrust::sort(thrust::device, &x[pos], &x[pos + size]);
         //
         atomicDoubleAdd(blockResult, (k / (size * 2 * x[pos + k])));
     }
