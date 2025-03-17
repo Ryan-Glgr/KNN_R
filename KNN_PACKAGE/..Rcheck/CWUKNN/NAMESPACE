@@ -1,0 +1,3 @@
+useDynLib(CWUKNN, .registration = TRUE)
+import(Rcpp)
+export (KNN)

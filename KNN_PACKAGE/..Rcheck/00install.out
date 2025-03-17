@@ -1,0 +1,46 @@
+* installing *source* package ‘CWUKNN’ ...
+** using staged installation
+---- Checking for CUDA/OpenCL/OpenMP support ----
+[1] TRUE
+NVCC compiler not found. Continuing without CUDA support.
+OPENCL_HOME not set, but on macOS. Using system OpenCL framework.
+OpenCL support detected.
+Trying to compile and link OpenMP test program:
+R CMD SHLIB '/var/folders/mj/mqmyfqvd4p3dfv1wyj_rvn3w0000gn/T//RtmpJOqfm0/fileed095c940ec5.c' -Xpreprocessor -fopenmp -lomp
+using C compiler: ‘Apple clang version 16.0.0 (clang-1600.0.26.6)’
+using SDK: ‘MacOSX15.2.sdk’
+/var/folders/mj/mqmyfqvd4p3dfv1wyj_rvn3w0000gn/T//RtmpJOqfm0/fileed095c940ec5.c:2:10: fatal error: 'omp.h' file not found
+    2 | #include <omp.h>
+      |          ^~~~~~~
+1 error generated.
+make: *** [/var/folders/mj/mqmyfqvd4p3dfv1wyj_rvn3w0000gn/T//RtmpJOqfm0/fileed095c940ec5.o] Error 1
+Warning message:
+In system(compile_command, intern = TRUE) :
+  running command 'R CMD SHLIB '/var/folders/mj/mqmyfqvd4p3dfv1wyj_rvn3w0000gn/T//RtmpJOqfm0/fileed095c940ec5.c' -Xpreprocessor -fopenmp -lomp' had status 1
+OpenMP compile+link test failed or OpenMP unavailable.
+Output from compile attempt:
+[1] "clang -I\"/usr/local/Cellar/r/4.4.2_2/lib/R/include\" -DNDEBUG   -I/usr/local/opt/gettext/include -I/usr/local/opt/readline/include -I/usr/local/opt/xz/include -I/usr/local/include    -fPIC  -g -O2  -c /var/folders/mj/mqmyfqvd4p3dfv1wyj_rvn3w0000gn/T//RtmpJOqfm0/fileed095c940ec5.c -o /var/folders/mj/mqmyfqvd4p3dfv1wyj_rvn3w0000gn/T//RtmpJOqfm0/fileed095c940ec5.o"
+attr(,"status")
+[1] 1
+[1] TRUE
+Makevars file created:
+PKG_CPPFLAGS =  -DUSE_OPENCL
+PKG_CXXFLAGS =  
+PKG_LIBS =  -framework OpenCL
+** libs
+using C++ compiler: ‘Apple clang version 16.0.0 (clang-1600.0.26.6)’
+using SDK: ‘MacOSX15.2.sdk’
+make: Nothing to be done for `all'.
+make: `symbols.rds' is up to date.
+installing to /Users/ryangallagher/Desktop/KNN_R/KNN_PACKAGE/..Rcheck/00LOCK-KNN_PACKAGE/00new/CWUKNN/libs
+** R
+** inst
+** byte-compile and prepare package for lazy loading
+** help
+*** installing help indices
+** building package indices
+** testing if installed package can be loaded from temporary location
+** checking absolute paths in shared objects and dynamic libraries
+** testing if installed package can be loaded from final location
+** testing if installed package keeps a record of temporary installation path
+* DONE (CWUKNN)
