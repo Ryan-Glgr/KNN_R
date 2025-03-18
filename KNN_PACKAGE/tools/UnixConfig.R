@@ -17,20 +17,33 @@ local_libs     <- character()  # For libraries: -l..., -L..., etc.
 local_ldflags  <- character()  # For additional linker flags if needed
 
 # ------------------------------CHECK FOR CUDA USING NVCC. ------------------
-run_cu  <- file.path("src", "cudaKNN.cu")
-# output shared object MUST go in inst, because R doesn't always take all the files from src over. so it goes in a place it must be copied by the installation process
-run_so  <- file.path("inst", "kernels", "cudaKNN.so")
+# Define relative paths
+run_cu <- file.path("src", "cudaKNN.cu")
+run_so <- file.path("inst", "kernels", "cudaKNN.so")
+
+# Normalize the source path (must exist)
+abs_run_cu <- normalizePath(run_cu, mustWork = TRUE)
+
+# Normalize the destination directory. since the file won't exist yet, normalize its directory
+abs_run_so_dir <- normalizePath(dirname(run_so), mustWork = TRUE)
+abs_run_so <- file.path(abs_run_so_dir, basename(run_so))
+
+# Debugging: print normalized paths
+message("Normalized source path: ", abs_run_cu)
+message("Normalized output path: ", abs_run_so)
+
+# if we have nvcc, we can tell of course by which nvcc output
 nvcc <- Sys.which("nvcc")
+
 if (nzchar(nvcc)) {
   message("Found NVCC at: ", nvcc)
+  compile_output <- system2(nvcc, args = c(
+    abs_run_cu, "-shared", "-rdc=true", "-arch=sm_50",
+    "-std=c++14", "-o", abs_run_so, "-Xcompiler", "-fPIC", "-lcudart", "-O3"
+  ), stdout = TRUE, stderr = TRUE)
 
-  # IMPORTANT FLAGS! -shared flag creates a shared library and -fPIC makes it position independent.
-  system2(nvcc, args = c(run_cu, "-shared", "-rdc=true", "-arch=sm_50", "-std=c++14", "-o", run_so, "-Xcompiler", "-fPIC", "-lcudart", "-O3"),
-          stdout = TRUE, stderr = TRUE)
-
-  if (file.exists(run_so)) {
+  if (file.exists(abs_run_so)) {
     message("Successfully compiled cudaKNN.cu to cudaKNN.so")
-    # Instead of linking the .so in PKG_LIBS, we simply define the USE_CUDA flag.
     local_cppflags <- c(local_cppflags, "-DUSE_CUDA")
   } else {
     warning("Compilation of cudaKNN.cu failed! 'cudaKNN.so' not found.")

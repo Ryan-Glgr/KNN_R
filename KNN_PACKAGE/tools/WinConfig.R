@@ -15,23 +15,32 @@ local_cppflags <- character()  # For preprocessor flags: -D... and -I...
 local_cxxflags <- character()  # For compiler flags like -fopenmp
 local_libs     <- character()  # For libraries: -l..., -L..., etc.
 local_ldflags  <- character()  # For additional linker flags if needed
+
+
 # ------------------------------CHECK FOR CUDA USING NVCC. ------------------
 # Define paths for cudaKNN.cu and the output DLL in the inst/kernels folder.
 run_cu  <- file.path("src", "cudaKNN.cu")
 run_dll <- file.path("inst", "kernels", "cudaKNN.dll")
+
+## This ensures that nvcc sees the correct file locations regardless of the working directory.
+abs_run_cu <- normalizePath(run_cu, mustWork = TRUE)          # Normalize the source file path; mustWork=TRUE ensures the file exists.
+abs_run_dll_dir <- normalizePath(dirname(run_dll), mustWork = TRUE)  # Normalize the directory for the output DLL.
+abs_run_dll <- file.path(abs_run_dll_dir, basename(run_dll))     # Reconstruct the full absolute path for the DLL.
+
 nvcc <- Sys.which("nvcc")
 # see if we have nvcc. if we do then we try and compile CUDA
 if (nzchar(nvcc)) {
   message("Found NVCC at: ", nvcc)
 
   # Compile the CUDA file into a shared library (.dll).
-  system2(nvcc, args = c(shQuote(run_cu), "-shared", "-rdc=true", "-arch=sm_50", "-std=c++14", "-o", shQuote(run_dll), "-lcudart", "-O3"),
+  system2(nvcc, args = c(shQuote(abs_run_cu), "-shared", "-rdc=true", "-arch=sm_50", "-std=c++14",
+                          "-o", shQuote(abs_run_dll), "-lcudart", "-O3"),
           stdout = TRUE, stderr = TRUE)
 
   # if we find the .dll we can use the -DUSE_CUDA flag, which changes our implementation to load the cuda
-  if (file.exists(run_dll)) {
+  if (file.exists(abs_run_dll)) {
     message("Successfully compiled cudaKNN.cu to cudaKNN.dll")
-    # if we found or dll we can just set this flag.
+    # if we found our dll we can just set this flag.
     local_cppflags <- c(local_cppflags, "-DUSE_CUDA")
   } else {
     warning("Compilation of cudaKNN.cu failed! 'cudaKNN.dll' not found.")
@@ -39,6 +48,7 @@ if (nzchar(nvcc)) {
 } else {
   message("NVCC compiler not found. Continuing without CUDA support.")
 }
+
 
 ## --- OpenCL Check ---
 OPENCL_HOME <- Sys.getenv("OPENCL_HOME")
