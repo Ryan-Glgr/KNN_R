@@ -1,0 +1,1 @@
+"${R_HOME}/bin/Rscript" "tools/WinConfig.R"

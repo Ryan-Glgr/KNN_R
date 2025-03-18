@@ -1,0 +1,17 @@
+# Compiled object files
+*.o
+
+# Shared libraries
+*.so
+*.dll
+*.dylib
+
+# Build directories
+build/
+libs/
+
+# R temporary files
+.Rhistory
+.RData
+.Rproj.user/
+
