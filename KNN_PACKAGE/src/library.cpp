@@ -1,3 +1,12 @@
+/**
+ * @file: library.cpp
+ * @brief: Creates a connection between each implementation of the problem, and links it to a single "KNN" wrapper function
+ *
+ * @author: Ryan Gallagher
+ * @date: 18.3.202
+ *
+ */
+
 #include "library.h"
 // KNN function is what is available through R, this takes two vectors and a K.
 // allows users to choose float or double precision, and allow them to choose an implementation.

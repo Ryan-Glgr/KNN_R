@@ -1,3 +1,11 @@
+/**
+ * @file: OpenCL_KNN.cpp
+ * @brief: Kernels for OpenCL GPU functionality
+ *
+ * @authors: Matthew C. Hansen, Ryan Gallagher
+ * @date: 3.18.2025
+ *
+ */
 
 // Define type T, defaults to float
 #ifndef T

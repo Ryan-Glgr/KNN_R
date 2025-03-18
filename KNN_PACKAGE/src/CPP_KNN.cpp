@@ -1,3 +1,12 @@
+/**
+ * @file: CPP_KNN.cpp
+ * @brief: Defines the functionality for the CPP implementation
+ *
+ * @authors: Aaron Snyder, Noah Rodal
+ * @date: 3.18.2025
+ *
+ */
+
 #include <Rcpp.h>
 #include <vector>
 #include <cmath>

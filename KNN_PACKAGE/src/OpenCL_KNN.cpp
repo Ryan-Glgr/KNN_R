@@ -1,3 +1,11 @@
+/**
+ * @file: OpenCL_KNN.cpp
+ * @brief: Defines the functionality for the OpenCL implementation
+ *
+ * @author: Ryan Gallagher, Austin Snyder, Matthew Hansen
+ * @date: 3.18.2025
+ *
+ */
 #ifdef USE_OPENCL
 
 #include <iostream>

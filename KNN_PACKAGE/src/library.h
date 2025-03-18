@@ -1,6 +1,11 @@
-//
-// Created by Ryan Gallagher on 2/27/25.
-//
+/**
+ * @file: library.h
+ * @brief: Defines the functions created for internal use provided specific compile conditions
+ *
+ * @author: Ryan Gallagher
+ * @date: 27.2.2025
+ *
+ */
 #ifndef LIBRARY_H
 #define LIBRARY_H
 #include <Rcpp.h>
