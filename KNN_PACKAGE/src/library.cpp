@@ -2,7 +2,7 @@
 * @file: library.cpp
  * @brief: Provides the function which is exposed to R, and calls the corresponding implementations based on arguments to the function.
  * @author: Ryan Gallagher
- * @date: 3.18.2025
+ * @date: 2.27.2025
  */
 #include "library.h"
 // KNN function is what is available through R, this takes two vectors and a K.

@@ -1,0 +1,65 @@
+---
+title: "Using the CWUKNN Package"
+author: "Matthew C. Hansen"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{CWU KNN Demo}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# Introduction
+
+The `CWUKNN` package is a implementation of the KNN problem, solved with threading and GPU computing. This vignette provides a guide on how to get started using the package.
+
+The package includes multiple modes of execution, which can be switched between depending on the user's preference:
+  - C++ (For threaded CPU execution)
+  - CUDA (For newer Nvidia GPU cards)
+  - OpenCL (For most Graphics Cards)
+
+## Purpose
+
+# Installation
+
+To install the package, use the following steps:
+*If using OpenCL*:
+  On Windows: Add OPENCL_HOME as a new System Environment Variable, linking to the path where your OpenCL installation is stored. If using the Nvidia GPU Computing Toolkit, for example, this should be `C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.8`
+
+Then, run:
+```{r, eval=FALSE}
+install.packages("CWUKNN")
+```
+
+The installation should build each piece of the program, and will different implementations based on what the user's machine supports (EX: With or without CUDA or OpenCL support).
+
+To remove the package, simply run:
+```{r, eval=FALSE}
+install.packages("CWUKNN")
+```
+
+# KNN Function
+
+`CWUKNN` implements a single function: `KNN(x, y, k, mode, precision)`, which calculates the Information Energy (IE) values between two rows, using various options on how the program executes its code.
+
+Example execution:
+```{r, eval=FALSE}
+# Define K values to search for
+k = 5000;
+
+# Take in some data:
+data <- fread("data.csv", skip = 2)
+column_0 <- data$COLUMN0
+column_1 <- data$COLUMN1
+
+## Calculate the IE between column_0 and column_1
+
+# Use C++ implementation, with double precision
+result_cpp <- KNN(column_0, column_1, k, mode="", precision="double");
+# Use CUDA implementation, with float precision
+result_cuda <- KNN(column_0, column_1, k, mode="cuda", precision="float");
+# Use OpenCL implementation, with float precision
+result_opencl <- KNN(column_0, column_1, k, mode="opencl", precision="float");
+
+# result_cpp, result_cuda, and result_opencl contain single IE values.
+```
