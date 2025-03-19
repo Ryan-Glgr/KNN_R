@@ -1,3 +1,12 @@
+/**
+ * @file: testCuda.cuh
+ * @brief: Defines the functionality for the Cuda implementation
+ *
+ * @author: Sean Gallaway
+ * @date: 3.18.2025
+ *
+ */
+
 #include <vector>
 #include <algorithm>
 #include <set>

@@ -1,3 +1,12 @@
+/**
+ * @file: run.cu
+ * @brief: Defines the functions for the Cuda implementation
+ *
+ * @author: Sean Gallaway
+ * @date: 3.18.2025
+ *
+ */
+
 #include "testCuda.cuh"
 
 /*!
