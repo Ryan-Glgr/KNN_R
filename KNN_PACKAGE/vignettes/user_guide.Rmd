@@ -1,0 +1,89 @@
+---
+title: "CWUKNN-Package User Guide"
+author: "Ryan Gallagher, Austin Snyder, Sean Gallaway, Matthew Hansen, Vandan Amin, Chaker Baloch, Aaron Snyder, Bobi Vladimirov, Alex Buckley, Noah Rodal"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+bibliography: user_guide.bib
+vignette: >
+  %\VignetteIndexEntry{CWUKNN-Package User Guide}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# Introduction
+
+The `CWUKNN` package provides a single function used to estimate Onicescu's Information Energy between two sets of data, based on calculations described by Cațaron et al. (@knn_ie). This vignette provides a guide on how to get started using the package.
+
+The provided function includes multiple modes of execution, which can be switched between depending on the user's preference:
+  - C++ (For threaded CPU execution)
+  - CUDA (For newer Nvidia GPU cards)
+  - OpenCL (For most Graphics Cards)
+Additionally, the user can specify between data types `float` and `double` that the program will use to complete calculations. This may result in faster times depending on the executing system's hardware, as some cards are optimized for a specific data type.
+
+# Installation
+
+Installing the `CWUKNN` package can done in any terminal the can run R, or can be installed from the CRAN repository in R. The installation process will install the package and compile with different implementations based on what the user's machine supports or has installed (EX: With or without CUDA or OpenCL support).
+
+## Prerequisites
+
+- Installation of C++ Version 14 or higher.
+- (Optional) Installation of CUDA and/or OpenCL. For the CUDA and OpenCL implementations for Windows or Linux, we recommend using the [Nvidia GPU Computing Toolkit](https://developer.nvidia.com/cuda-downloads) as both a CUDA and OpenCL installation.
+- If using MAC, OpenCL comes pre-installed as a framework, and no extra OpenCL installation is necessary to run `CWUKNN`'s OpenCL implementation.
+
+**Note**: If using OpenCL on Windows or Unix:
+  Add OPENCL_HOME as a system environment variable on your machine, linking to the path where your OpenCL installation is stored:
+    - On Windows: Open Settings > Search "Edit System Environment Variables" > Environment Variables > In System Variables: New >
+      Variable Name: OPENCL_HOME, Variable Value: (Path to your OpenCL home, EX: `C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.8`)
+    - On Unix: Add the path to OpenCL's home directory to the /etc/environment file. `OPENCL_HOME="path_to_opencl_home"`
+
+## Install Using R
+
+If you'd like to install `CWUKNN` through the CRAN repository in R or RStudio, use the following R command:
+```{r, eval=FALSE}
+install.packages("CWUKNN")
+```
+
+## Install Using a Terminal and Package File:
+
+If you'd like to install `CWUKNN` without the CRAN repository, you can download the package file `CWUKNN_x.x.x.tar.gz` and install the package through a terminal.
+
+On any terminal with access to R, run the following command:
+```{r, eval=FALSE}
+R CMD INSTALL PATH_TO_PACKAGE_FILE
+```
+
+If you need to remove the package, or reinstall the package with OpenCL or CUDA functionality enabled run the following command in R:
+```{r, eval=FALSE}
+install.packages("CWUKNN")
+```
+
+# KNN Function
+
+`CWUKNN` implements a single function: `KNN(x, y, k, mode, precision)`, which calculates an estimation of Information Energy (IE) values between two sets of data at a specific K value. Using several inputs, the user can determine how the program executes its code.
+
+Example execution:
+```{r, eval=FALSE}
+# Use CWUKNN functions
+library("CWUKNN")
+
+# Define K values to search for
+k = 5000;
+
+# Take in some data:
+data <- fread("data.csv", skip = 2)
+column_0 <- data$COLUMN0
+column_1 <- data$COLUMN1
+
+## Calculate the IE between column_0 and column_1
+
+# Use C++ implementation, with double precision
+result_cpp <- KNN(column_0, column_1, k, mode="", precision="double");
+# Use CUDA implementation, with float precision
+result_cuda <- KNN(column_0, column_1, k, mode="cuda", precision="float");
+# Use OpenCL implementation, with float precision
+result_opencl <- KNN(column_0, column_1, k, mode="opencl", precision="float");
+
+# result_cpp, result_cuda, and result_opencl contain single IE estimation values.
+```
+
+# References
