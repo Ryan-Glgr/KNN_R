@@ -1,6 +1,5 @@
 Information Energy Kth Nearest Neighbor Estimation - C++/CUDA/OpenCL optimization
 ==================================================
-
 Last README update: 17 March 2025
 
 -----------
@@ -35,12 +34,12 @@ To use KNN function a user must do this in their R script.
             - Column of Y values
             - Desired K amount (integer)
             - optionally: mode= <"OpenCL"> <"CUDA"> or <"cpp"> with a default using C++
-            - optoinally: precision="float" or "double" to determine the amount of decimal precision needed.
+            - optionally: precision="float" or "double" to determine the amount of decimal precision needed.
 
 -------------
 FUNCTIONALITY
 -------------
 This package is an optimized implementation of KNN algorithm for estimating Information Energy.
 It is NOT for classification problems requiring KNN style decisions. Tiny K values, 0, 1, etc may result
-in bad outputs ie INF or large values. This is simply a consequence of the K Nearest Neighbor algorithm.
+in bad outputs ie INF or large values. This is simply a mathematical consequence of the K Nearest Neighbor algorithm.
 It is designed to be ran with slightly larger k values.
