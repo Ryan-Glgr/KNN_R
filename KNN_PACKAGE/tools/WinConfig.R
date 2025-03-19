@@ -1,5 +1,14 @@
-#!/usr/bin/env Rscript
+#’ @title Windows Build‑Flag Configuration Script
+#’ @description Detects CUDA, OpenCL, and OpenMP support on Windows and writes a tailored src/Makevars.win.
+#’   • If NVCC is found, compiles cudaKNN.cu into a DLL and defines -DUSE_CUDA.
+#’   • If OPENCL_HOME is set, defines -DUSE_OPENCL and adds include/lib paths.
+#’   • Tests for OpenMP support, enabling -DHAVE_OPENMP, -fopenmp flags if successful.
+#’ @authors Ryan Gallagher, Matt Hansen, Austin Snyder
+#’ @date 2025‑03‑18
+#’ @keywords internal
+NULL
 
+#!/usr/bin/env Rscript
 cat("---- Checking for CUDA/OpenCL/OpenMP support (Windows) ----\n")
 
 # Use the Windows Makevars file in the src folder.

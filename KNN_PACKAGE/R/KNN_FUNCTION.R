@@ -1,3 +1,11 @@
+#’ @title K‑Nearest Neighbors wrapper
+#’ @description Provides an R‑callable interface to our C++ KNN implementation (Library.cpp).
+#’ @author Ryan Gallagher
+#’ @date 2025‑03‑18
+#’ @useDynLib YourPackageName
+#’ @importFrom Rcpp sourceCpp
+NULL
+
 #' Compute Information Energy using KNN
 #'
 #' This function calls the exported C++ function `KNN` directly.

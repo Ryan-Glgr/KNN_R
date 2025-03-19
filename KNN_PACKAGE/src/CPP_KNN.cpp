@@ -1,3 +1,10 @@
+/**
+* @file: CPP_KNN.cpp
+ * @brief: Default C++ implementation of KNN using multithreading for speedups.
+ * @authors: Aaron Snyder, Noah Rodal, Ryan Gallagher
+ * @date: 3.18.2025
+ */
+
 #include <Rcpp.h>
 #include <vector>
 #include <cmath>
@@ -5,9 +12,9 @@
 #include <numeric>
 
 #ifdef HAVE_OPENMP
-#include <omp.h>
+    #include <omp.h>
 #else
-#include <future>
+    #include <future>
 #endif
 
 using namespace Rcpp;
@@ -84,6 +91,7 @@ float IE_xy(Rcpp::NumericVector data_x, Rcpp::NumericVector data_y, int k) {
             }
         }
     }
+// when we don't have openMP, this is the function body. we simply use std::async for the parallelization.
 #else
     // Async/Futures implementation for cross-platform parallelism without OpenMP. 
     std::vector<std::future<float>> futures;
@@ -120,6 +128,5 @@ float IE_xy(Rcpp::NumericVector data_x, Rcpp::NumericVector data_y, int k) {
         result += f.get();
     }
 #endif
-
     return result;
 }

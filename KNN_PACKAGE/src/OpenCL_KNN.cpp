@@ -1,5 +1,12 @@
+/**
+* @file: OpenCL_KNN.cpp
+ * @brief: A simple implementation of KNN information energy approximantion using OpenCL for speedup
+ *
+ * @authors: Ryan Gallagher, Matt Hansen, Austin Snyder
+ * @date: 3.18.2025
+ *
+ */
 #ifdef USE_OPENCL
-
 #include <iostream>
 #include <fstream>
 #include <sstream>

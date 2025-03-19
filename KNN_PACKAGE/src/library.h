@@ -1,11 +1,14 @@
-//
-// Created by Ryan Gallagher on 2/27/25.
-//
+/**
+* @file: library.h
+ * @brief: Provides declarations for the different functions which may be called. Uses pre processor to determine which files we are going to link.
+ * @author: Ryan Gallagher
+ * @date: 3.18.2025
+ *
+ */
 #ifndef LIBRARY_H
 #define LIBRARY_H
 #include <Rcpp.h>
 #pragma once
-
 
 #ifdef USE_CUDA
 #pragma message("library.h: Compiling WITH CUDA FUNCTIONALITY!")

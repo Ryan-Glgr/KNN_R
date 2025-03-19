@@ -56,7 +56,7 @@ compute_IE_Ryan_OPENCL <- function(x, y, ks, mode="openCL", precision="float") {
 # Define k values and subset data as needed
 # -------------------------------------------------------------------
 k_values <- c(5000, 10000, 15000, 20000)  # example
-N <- 50000  # how many rows you want to test
+N <- length(MATHEFF)  # how many rows you want to test
 x_sub <- MATHEFF[1:N]
 y_sub <- MATINTFC[1:N]
 

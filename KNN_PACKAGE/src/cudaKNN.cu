@@ -1,4 +1,14 @@
+/**
+* @file: run.cu
+ * @brief: Defines the functions for the Cuda implementation
+ *
+ * @author: Sean Gallaway
+ * @date: 3.18.2025
+ *
+ */
+
 #include "cudaKNN.cuh"
+
 /*!
  *  \fn void runKernel (double* vec1, int* size1, double* vec2, int* size2, int* k)
  *  \brief library function that is exported and expected to be ran in R.

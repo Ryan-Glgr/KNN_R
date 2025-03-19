@@ -1,4 +1,9 @@
-
+/**
+* @file: OpenCL_KNN.cl
+ * @brief: Kernel functions which are called by OpenCL_KNN.cpp.
+ * @authors: Ryan Gallagher, Matt Hansen, Austin Snyder
+ * @date: 3.18.2025
+ */
 // Define type T, defaults to float
 #ifndef T
 #define T float
