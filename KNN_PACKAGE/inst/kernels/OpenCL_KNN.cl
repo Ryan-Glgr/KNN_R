@@ -66,6 +66,7 @@ __kernel void kth_element(__global T* distanceMatrix,
     const int kAdjusted = kClamped + i * groupSize;
 
     // ------------------------ START QUICKSELECT ------------------------ //
+    // Credit - Based off of: https://www.geeksforgeeks.org/quickselect-algorithm/
 
     // Gets the first and last indexes of the current grou
     lowerBound = groupSize * i;
@@ -79,6 +80,7 @@ __kernel void kth_element(__global T* distanceMatrix,
         left_swap = lowerBound - 1;
 
         // --------------- START PARTITION (Lomuto) --------------- //
+        // Credit - Based off of: https://www.geeksforgeeks.org/lomuto-partition-algorithm/
         
         // Set the element
         right_swap = lowerBound;
