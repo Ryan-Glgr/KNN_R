@@ -1,3 +1,18 @@
+/*
+  Authors: Andrew Struthers, Aaron Snyder, Noah Rodal
+  Date: March 2025
+  Description: 
+  This C++ implementation, integrated with R via Rcpp, provides optimized 
+  functions for computing k-Nearest Neighbors (kNN) density estimation and 
+  conditional information energy (IE). The kNN function leverages OpenMP 
+  for parallelization to efficiently compute neighbor distances, while the 
+  IE_xy function estimates conditional information energy using a weighted 
+  average approach over unique conditional subsets.
+  
+  This code is designed for high-performance statistical computing, 
+  particularly in machine learning and data analysis applications.
+*/
+
 #include <Rcpp.h>
 #include <vector>
 #include <cmath>
