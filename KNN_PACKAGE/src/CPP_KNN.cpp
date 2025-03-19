@@ -1,7 +1,7 @@
 /**
 * @file: CPP_KNN.cpp
  * @brief: Default C++ implementation of KNN using multithreading for speedups.
- * @authors: Aaron Snyder, Noah Rodal, Ryan Gallagher
+ * @authors: Andrew Struthers, Aaron Snyder, Noah Rodal, Ryan Gallagher
  * @date: 3.18.2025
  */
 
