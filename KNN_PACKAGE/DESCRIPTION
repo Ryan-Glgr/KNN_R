@@ -1,9 +1,9 @@
 Package: CWUKNN
-Version: 0.1.0
+Version: 1.0.0
 Title: CWU Multiplatform KNN Implementation
 Description: Information Energy Computation which is sped up though the use of parallel computing in C++/CUDA.
 Author: CWU Computational Statistics
-Maintainer: Ryan Gallagher <rygall75@gmail.com>
+Maintainer: Donald Davendra <donald.davendra@cwu.edu>
 License: GPL-3
 Encoding: UTF-8
 Imports: 
@@ -11,4 +11,3 @@ Imports:
 LinkingTo: 
     Rcpp
 RoxygenNote: 7.3.2
-
